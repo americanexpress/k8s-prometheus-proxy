@@ -1,0 +1,45 @@
+{
+  "name": "kubernetes-prometheus-proxy",
+  "version": "1.0.0",
+  "description": "Kubernetes Metrics Proxy to get prometheus metrics from all pods of given projects",
+  "main": "server.js",
+  "scripts": {
+    "start": "name=kubernetes-metrics-proxy node server.js",
+    "test": "KUBERNETES_SERVICE_HOST=localhost KUBERNETES_SERVICE_PORT=58443 K8S_BUILD_NAMESPACE=project1 TOKEN_FILE=./token K8S_CACERT=./cacert node_modules/.bin/nyc --reporter=text node_modules/.bin/mocha test --recursive --timeout 25000",
+    "coverage": "nyc ",
+    "posttest": "./node_modules/.bin/gulp build",
+    "build": "echo \"Build Success\"",
+    "lint": "eslint --fix --ignore-path .gitignore --ext .js,.snap ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "tbd"
+  },
+  "dependencies": {
+    "express": "4.10.6",
+    "http-proxy": "^1.17.0",
+    "path": "*",
+    "gulp": "^4.0.2",
+    "prometheus-api-metrics": "^2.2.5",
+    "prom-client": "^11.5.3",
+    "properties-reader": "^2.1.1",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-http": "^2.0.1",
+    "mocha": "^2.4.5",
+    "nyc": "^12.0.0",
+    "proxyquire": "^1.4.0",
+    "sinon": "^9.2.0",
+    "nock": "^9.2.5",
+    "eslint": "^4.4.1",
+    "eslint-config-amex": "^7.0.0",
+    "should": "^8.3.1",
+    "supertest": "^1.2.0",
+    "node-mocks-http": "^1.5.2",
+    "mock-fs": "^4.10.0"
+  },
+  "keywords": [],
+  "license": "Apache-2.0"
+}

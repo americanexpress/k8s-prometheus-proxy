@@ -1,0 +1,24 @@
+# node/npm
+node_modules
+*.log
+
+# build
+build
+static
+mocks
+lib
+dist
+lastBuild.json
+stats.json
+.dev
+.sass_cache
+.webpack-stats.json
+
+# test
+test-results
+.jscsrc
+.jest-cache
+.nyc_output
+# misc
+.DS_Store
+.idea

@@ -1,0 +1,26 @@
+# HELP process_cpu_user_seconds_total Total user CPU time spent in seconds.
+# TYPE process_cpu_user_seconds_total counter
+process_cpu_user_seconds_total{podname="myapp-deployment-1-slgzc",podip="10.1.1.2"} 2000.8867469999955 1528397974059
+
+# HELP process_cpu_system_seconds_total Total system CPU time spent in seconds.
+# TYPE process_cpu_system_seconds_total counter
+process_cpu_system_seconds_total{podname="myapp-deployment-1-slgzc",podip="10.1.1.2"} 200.15524099999915 1528397974059
+
+# HELP process_cpu_seconds_total Total user and system CPU time spent in seconds.
+# TYPE process_cpu_seconds_total counter
+process_cpu_seconds_total{podname="myapp-deployment-1-slgzc",podip="10.1.1.2"} 2000.041987999999 1528397974059
+
+# HELP process_start_time_seconds Start time of the process since unix epoch in seconds.
+# TYPE process_start_time_seconds gauge
+process_start_time_seconds{podname="myapp-deployment-1-slgzc",podip="10.1.1.2"} 2528042497
+
+# HELP process_resident_memory_bytes Resident memory size in bytes.
+# TYPE process_resident_memory_bytes gauge
+process_resident_memory_bytes{podname="myapp-deployment-1-slgzc",podip="10.1.1.2"} 22222222 1528397974060
+
+# HELP process_virtual_memory_bytes Virtual memory size in bytes.
+# TYPE process_virtual_memory_bytes gauge
+process_virtual_memory_bytes{podname="myapp-deployment-1-slgzc",podip="10.1.1.2"} 2300000000 1528397974060
+
+nodejs_heap_space_size_total_bytes{podname="myapp-deployment-1-slgzc",podip="10.1.1.2",space="new"} 2000000 1528397976715
+nodejs_heap_space_size_total_bytes{podname="myapp-deployment-1-slgzc",podip="10.1.1.2",space="old"} 20000000 1528397976715

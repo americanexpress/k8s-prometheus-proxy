@@ -1,0 +1,894 @@
+{
+  "kind": "PodList",
+  "apiVersion": "v1",
+  "metadata": {
+    "selfLink": "/api/v1/namespaces/myproject/pods",
+    "resourceVersion": "243520585"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "myapp-deployment-1-r70ts",
+        "generateName": "myapp-deployment-1-",
+        "namespace": "myproject",
+        "uid": "58a9acb7-479d-11e8-9b0c-fa163ef60be1"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "myapp",
+            "image": "my-docker-repo/myproject/myapp-image:latest",
+            "ports": [
+              {
+                "name": "https",
+                "containerPort": 5043,
+                "protocol": "TCP"
+              }
+            ],
+            "env": [
+              {
+                "name": "BUILD_NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              },
+              {
+                "name": "NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "restartPolicy": "Always",
+        "nodeName": "mynode1"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null
+          }
+        ],
+        "hostIP": "1.2.3.4",
+        "podIP": "10.0.0.1",
+        "startTime": "2018-04-24T08:56:15Z",
+        "containerStatuses": [
+          {
+            "name": "myapp",
+            "state": {
+              "running": {
+                "startedAt": "2018-04-24T08:56:23Z"
+              }
+            },
+            "lastState": {},
+            "ready": true,
+            "restartCount": 0,
+            "image": "my-docker-repo/myproject/myapp-image:latest",
+            "imageID": "docker-pullable://my-docker-repo/myproject/myapp-image@sha256:somebigsha",
+            "containerID": "docker://somebigcontainerid"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "myapp-deployment-1-slgzc",
+        "generateName": "myapp-deployment-1-",
+        "namespace": "myproject",
+        "uid": "8cc04104-479b-11e8-9b0c-fa163ef60be1"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "myapp",
+            "image": "my-docker-repo/myproject/myapp-image:latest",
+            "ports": [
+              {
+                "name": "https",
+                "containerPort": 5010,
+                "protocol": "TCP"
+              }
+            ],
+            "env": [
+              {
+                "name": "BUILD_NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              },
+              {
+                "name": "NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "nodeName": "mynode2"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-24T08:43:24Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-24T08:44:14Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-24T08:43:24Z"
+          }
+        ],
+        "hostIP": "1.2.3.5",
+        "podIP": "10.1.1.2",
+        "startTime": "2018-04-24T08:43:24Z",
+        "containerStatuses": [
+          {
+            "name": "myapp",
+            "state": {
+              "running": {
+                "startedAt": "2018-04-24T08:43:38Z"
+              }
+            },
+            "lastState": {},
+            "ready": true,
+            "restartCount": 0,
+            "image": "my-docker-repo/myproject/myapp-image:latest",
+            "imageID": "docker-pullable://my-docker-repo/myproject/myapp-image@sha256:somebigsha",
+            "containerID": "docker://somebigcontainerid"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "myapp3-deployment-2-772tw",
+        "generateName": "myapp3-deployment-2-",
+        "namespace": "myproject",
+        "uid": "492ad85a-4998-11e8-9b0c-fa163ef60be1"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "myapp3",
+            "image": "my-docker-repo/myproject/myapp3:latest",
+            "ports": [
+              {
+                "name": "https",
+                "containerPort": 5010,
+                "protocol": "TCP"
+              }
+            ],
+            "env": [
+              {
+                "name": "APP_NAME",
+                "value": "myapp3"
+              },
+              {
+                "name": "BUILD_NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              },
+              {
+                "name": "NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "3G"
+              },
+              "requests": {
+                "cpu": "1",
+                "memory": "3G"
+              }
+            }
+          }
+        ],
+        "nodeName": "mynode3"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-26T21:25:04Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-26T21:25:45Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-26T21:25:04Z"
+          }
+        ],
+        "hostIP": "5.6.7.8",
+        "podIP": "10.0.0.3",
+        "startTime": "2018-04-26T21:25:04Z",
+        "containerStatuses": [
+          {
+            "name": "myapp3",
+            "state": {
+              "running": {
+                "startedAt": "2018-04-26T21:25:11Z"
+              }
+            },
+            "lastState": {},
+            "ready": true,
+            "restartCount": 0,
+            "image": "my-docker-repo/myproject/myapp3:latest",
+            "imageID": "docker-pullable://my-docker-repo/myproject/myapp3@sha256:somebigsha",
+            "containerID": "docker://somecontainerid"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "myproject-deployment-10-deploy",
+        "namespace": "myproject",
+        "uid": "94f273c6-49e0-11e8-9b0c-fa163ef60be1"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "deployment",
+            "image": "mydockerregistry/deployimage:tag",
+            "env": [],
+            "resources": {
+              "limits": {
+                "cpu": "400m",
+                "memory": "1500M"
+              },
+              "requests": {
+                "cpu": "400m",
+                "memory": "1500M"
+              }
+            }
+          }
+        ],
+        "nodeName": "mynode4"
+      },
+      "status": {
+        "phase": "Failed",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T06:02:35Z"
+          },
+          {
+            "type": "Ready",
+            "status": "False",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T06:29:15Z",
+            "reason": "ContainersNotReady",
+            "message": "containers with unready status: [deployment]"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T06:02:35Z"
+          }
+        ],
+        "hostIP": "1.2.3.8",
+        "podIP": "10.0.0.6",
+        "startTime": "2018-04-27T06:02:35Z",
+        "containerStatuses": [
+          {
+            "name": "deployment",
+            "state": {
+              "terminated": {
+                "exitCode": 1,
+                "reason": "Error",
+                "startedAt": "2018-04-27T06:03:11Z",
+                "finishedAt": "2018-04-27T06:29:14Z",
+                "containerID": "docker://c9cfdd2e16bfb42f74d15e7c4b37922a46e7e5d8063d29720d0da5fb2d57b967"
+              }
+            },
+            "lastState": {},
+            "ready": false,
+            "restartCount": 0,
+            "image": "mydockerregistry/deployimage:tag",
+            "imageID": "docker-pullable://mydockerregistry/mydeployimage@sha256:7c132cf30ff8013774be81668e4b58fa93f02bf409cd31bac7cd8a8552901a9a",
+            "containerID": "docker://c9cfdd2e16bfb42f74d15e7c4b37922a46e7e5d8063d29720d0da5fb2d57b967"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "myproject-deployment-11-361zt",
+        "generateName": "myproject-deployment-11-",
+        "namespace": "myproject",
+        "uid": "7342fec3-4a44-11e8-9b0c-fa163ef60be1"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "myproject",
+            "image": "my-docker-repo/myproject/myproject:latest",
+            "ports": [
+              {
+                "name": "https",
+                "containerPort": 5010,
+                "protocol": "TCP"
+              }
+            ],
+            "env": [
+              {
+                "name": "APP_NAME",
+                "value": "myproject"
+              },
+              {
+                "name": "BUILD_NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              },
+              {
+                "name": "NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "3G"
+              },
+              "requests": {
+                "cpu": "1",
+                "memory": "3G"
+              }
+            }
+          }
+        ],
+        "nodeName": "mynode11"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T17:57:28Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T17:58:19Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T17:57:28Z"
+          }
+        ],
+        "hostIP": "1.2.3.9",
+        "podIP": "10.1.1.5",
+        "startTime": "2018-04-27T17:57:28Z",
+        "containerStatuses": [
+          {
+            "name": "myproject",
+            "state": {
+              "running": {
+                "startedAt": "2018-04-27T17:57:48Z"
+              }
+            },
+            "lastState": {},
+            "ready": true,
+            "restartCount": 0,
+            "image": "my-docker-repo/myproject/myproject:latest",
+            "imageID": "docker-pullable://my-docker-repo/myproject/myproject@sha256:somesha",
+            "containerID": "docker://somecontainerid"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "myproject-deployment-11-nohawk",
+        "generateName": "myproject-deployment-11-",
+        "namespace": "myproject",
+        "uid": "nohawkularcpu-4a44-11e8-9b0c-fa163ef60be1"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "myproject",
+            "image": "my-docker-repo/myproject/myproject:latest",
+            "ports": [
+              {
+                "name": "https",
+                "containerPort": 5010,
+                "protocol": "TCP"
+              }
+            ],
+            "env": [
+              {
+                "name": "APP_NAME",
+                "value": "myproject"
+              },
+              {
+                "name": "BUILD_NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              },
+              {
+                "name": "NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "3G"
+              },
+              "requests": {
+                "cpu": "1",
+                "memory": "3G"
+              }
+            }
+          }
+        ],
+        "nodeName": "mynode11"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T17:57:28Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T17:58:19Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T17:57:28Z"
+          }
+        ],
+        "hostIP": "1.2.3.9",
+        "podIP": "10.1.2.11",
+        "startTime": "2018-04-27T17:57:28Z",
+        "containerStatuses": [
+          {
+            "name": "myproject",
+            "state": {
+              "running": {
+                "startedAt": "2018-04-27T17:57:48Z"
+              }
+            },
+            "lastState": {},
+            "ready": true,
+            "restartCount": 0,
+            "image": "my-docker-repo/myproject/myproject:latest",
+            "imageID": "docker-pullable://my-docker-repo/myproject/myproject@sha256:somebigsha",
+            "containerID": "docker://mycontainerid"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "myproject-deployment-11-s7bbw",
+        "generateName": "myproject-deployment-11-",
+        "namespace": "myproject",
+        "uid": "4f6a95aa-4a44-11e8-9b0c-fa163ef60be1"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "myproject",
+            "image": "my-docker-repo/myproject/myproject:latest",
+            "ports": [
+              {
+                "name": "https",
+                "containerPort": 5010,
+                "protocol": "TCP"
+              }
+            ],
+            "env": [
+              {
+                "name": "APP_NAME",
+                "value": "myproject"
+              },
+              {
+                "name": "BUILD_NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              },
+              {
+                "name": "NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "3G"
+              },
+              "requests": {
+                "cpu": "1",
+                "memory": "3G"
+              }
+            }
+          }
+        ],
+        "nodeName": "mynode12"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T17:56:28Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T17:57:19Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-27T17:56:28Z"
+          }
+        ],
+        "hostIP": "1.2.3.13",
+        "podIP": "10.1.2.4",
+        "startTime": "2018-04-27T17:56:28Z",
+        "containerStatuses": [
+          {
+            "name": "myproject",
+            "state": {
+              "running": {
+                "startedAt": "2018-04-27T17:56:46Z"
+              }
+            },
+            "lastState": {},
+            "ready": true,
+            "restartCount": 0,
+            "image": "my-docker-repo/myproject/myproject:latest",
+            "imageID": "docker-pullable://my-docker-repo/myproject/myproject@sha256:somebigsha",
+            "containerID": "docker://somecontainerid"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "myproject-deployment-9-deploy",
+        "namespace": "myproject",
+        "uid": "ba1bab61-499d-11e8-9b0c-fa163ef60be1"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "deployment",
+            "image": "mydockerregistry/deployimage:tag",
+            "env": [
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "400m",
+                "memory": "1500M"
+              },
+              "requests": {
+                "cpu": "400m",
+                "memory": "1500M"
+              }
+            }
+          }
+        ],
+        "nodeName": "myapnode20"
+      },
+      "status": {
+        "phase": "Failed",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-26T22:04:01Z"
+          },
+          {
+            "type": "Ready",
+            "status": "False",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-26T22:30:13Z",
+            "reason": "ContainersNotReady",
+            "message": "containers with unready status: [deployment]"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-26T22:04:01Z"
+          }
+        ],
+        "hostIP": "1.2.10.1",
+        "podIP": "10.1.11.1",
+        "startTime": "2018-04-26T22:04:01Z",
+        "containerStatuses": [
+          {
+            "name": "deployment",
+            "state": {
+              "terminated": {
+                "exitCode": 1,
+                "reason": "Error",
+                "startedAt": "2018-04-26T22:04:04Z",
+                "finishedAt": "2018-04-26T22:30:13Z",
+                "containerID": "docker://9d04d76784d9235396afa9cc51e49009f395adac2368941ee2e88d223387e156"
+              }
+            },
+            "lastState": {},
+            "ready": false,
+            "restartCount": 0,
+            "image": "mydockerregistry/deployimage:tag",
+            "imageID": "docker-pullable://mydockerregistry/mydeployimage@sha256:7c132cf30ff8013774be81668e4b58fa93f02bf409cd31bac7cd8a8552901a9a",
+            "containerID": "docker://9d04d76784d9235396afa9cc51e49009f395adac2368941ee2e88d223387e156"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "singlepod-deployment-1-r70ts",
+        "generateName": "singlepod-deployment-1-",
+        "namespace": "myproject",
+        "uid": "singlepoduid-479d-11e8-9b0c-fa163ef60be1"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "singlepod",
+            "image": "my-docker-repo/myproject/singlepod-image:latest",
+            "ports": [
+              {
+                "name": "https",
+                "containerPort": 5010,
+                "protocol": "TCP"
+              }
+            ],
+            "env": [
+              {
+                "name": "APP_NAME",
+                "value": "singlepod"
+              },
+              {
+                "name": "BUILD_NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "POD_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "status.podIP"
+                  }
+                }
+              },
+              {
+                "name": "NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "3G"
+              },
+              "requests": {
+                "cpu": "1",
+                "memory": "3G"
+              }
+            }
+          }
+        ],
+        "nodeName": "mynode1"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-24T08:56:15Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-24T08:56:56Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-04-24T08:56:15Z"
+          }
+        ],
+        "hostIP": "1.2.3.4",
+        "podIP": "10.1.1.15",
+        "startTime": "2018-04-24T08:56:15Z",
+        "containerStatuses": [
+          {
+            "name": "singlepod",
+            "state": {
+              "running": {
+                "startedAt": "2018-04-24T08:56:23Z"
+              }
+            },
+            "lastState": {},
+            "ready": true,
+            "restartCount": 0,
+            "image": "my-docker-repo/myproject/myapp-image:latest",
+            "imageID": "docker-pullable://my-docker-repo/myproject/singlepod@sha256:bcb7583f857c830c81d897db126b72c497f1a393a0463c205bf569c8427adb2f",
+            "containerID": "docker://30cdc235adede9574b86fe2d92ac830b9f9d509588ad011b90470745b273da09"
+          }
+        ]
+      }
+    }
+  ]
+}
