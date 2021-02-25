@@ -22,8 +22,9 @@
     "gulp": "^4.0.2",
     "prometheus-api-metrics": "^2.2.5",
     "prom-client": "^11.5.3",
-    "properties-reader": "^2.1.1",
-    "winston": "^3.3.3"
+    "properties-reader": "2.1.1",
+    "winston": "^3.3.3",
+    "ip-range-check": "^0.2.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",

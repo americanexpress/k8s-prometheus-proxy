@@ -18,10 +18,11 @@ const http = require('http');
 
 describe('upstream uri test', () => {
   it('test path', (done) => {
-    chai.expect(podmetricsUtils.deriveUpstreamURI('/v1/mproxy/prj/serv/metrics')).to.be.equal('/metrics');
-    chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/metrics')).to.be.equal('/metrics');
-    chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/metrics?some=thing&ssl=true')).to.be.equal('/metrics');
-    chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/my/ctxt/metrics')).to.be.equal('/my/ctxt/metrics');
+    chai.expect(podmetricsUtils.deriveUpstreamURI('/v1/mproxy/prj/serv/metrics', '/mproxy')).to.be.equal('/metrics');
+    chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/metrics', '/mproxy')).to.be.equal('/metrics');
+    chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/metrics?some=thing&ssl=true','/mproxy')).to.be.equal('/metrics');
+    chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/my/ctxt/metrics','/mproxy')).to.be.equal('/my/ctxt/metrics');
+    chai.expect(podmetricsUtils.deriveUpstreamURI('/kubesd/my/ctxt/metrics','/kubesd')).to.be.equal('/my/ctxt/metrics');
     done();
   });
 });

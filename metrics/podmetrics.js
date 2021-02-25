@@ -22,6 +22,7 @@ const os = require('os');
 const url = require('url');
 const podLabels = require('../labels/podlabels.js');
 const podmetricsUtils = require('./podmetricsUtil.js');
+const whitelistUtil = require('./whitelistUtil');
 
 function finishWithError(res) {
   res.writeHead(500, {'Content-Type': 'text/plain'});
@@ -47,7 +48,7 @@ function finishProcessing(noOfPods, completedRequests, successCount, errorCount,
   }
 }
 
-function retrieveMetrics(podIPMap, req, res) {
+function retrieveMetrics(podIPMap, req, res, upstreamURI) {
   const metricsResponses = [];
   let completedRequests = 0;
   let errorCount = 0;
@@ -59,10 +60,7 @@ function retrieveMetrics(podIPMap, req, res) {
 
   if (podIPMap.size > 0) {
     logger.debug("url " + req.url)
-    const parsedUrl = url.parse(req.url);
-    logger.debug(parsedUrl);
-    const upstreamURI = podmetricsUtils.deriveUpstreamURI(parsedUrl.pathname)
-    logger.debug(`upstreamURI : ${upstreamURI}`)
+    logger.debug(`upstreamURI : ${upstreamURI}`);
     const podReqHeaders = {};
     for(headerKey in req.headers) {
       if(headerKey.toUpperCase() === 'AUTHORIZATION') {
@@ -150,18 +148,27 @@ function retrieveMetrics(podIPMap, req, res) {
 
 function handleMetricsRoute(req, resp, k8sCACert, k8sToken) {
   logger.debug(`upstream port ${req.query.upstreamPort}`);
-  logger.debug(`upstream uri '${req.params.upstreamURI}`);
-
-  const podsDataPromise = k8sPods.podData(req.params.upstreamNamespace, req.params.upstreamService,
-    k8sCACert, k8sToken);
-  podsDataPromise.then((podsIPMap) => {
-    retrieveMetrics(podsIPMap, req, resp);
-  }, (error) => {
-    console.error(`error received from podsDataPromise ${error}`);
-    resp.writeHead(500, { 'Content-Type': 'text/plain' });
-    resp.write('Error processing request. could not get pods data');
-    resp.end();
-  });
+  const parsedUrl = url.parse(req.url);
+  const upstreamURI = podmetricsUtils.deriveUpstreamURI(parsedUrl.pathname, '/mproxy');
+  logger.debug(`upstreamURI : ${upstreamURI}`);
+  if(!whitelistUtil.isValidNamespaceName(req.params.upstreamNamespace)) {
+    logger.error(`invalid namespace ${req.params.upstreamNamespace}` );
+    finishWithError(resp);
+  } else if(!whitelistUtil.isWhitelistedPath(upstreamURI)) {
+    logger.error(`upstream URI ${upstreamURI} is not whitelisted` );
+    finishWithError(resp);
+  } else {
+    const podsDataPromise = k8sPods.podData(req.params.upstreamNamespace, req.params.upstreamService,
+      k8sCACert, k8sToken);
+    podsDataPromise.then((podsIPMap) => {
+      retrieveMetrics(podsIPMap, req, resp, upstreamURI);
+    }, (error) => {
+      console.error(`error received from podsDataPromise ${error}`);
+      resp.writeHead(500, { 'Content-Type': 'text/plain' });
+      resp.write('Error processing request. could not get pods data');
+      resp.end();
+    });
+  }
 }
 
 module.exports = {

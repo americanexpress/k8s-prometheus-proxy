@@ -15,8 +15,6 @@
 const winston = require('winston');
 const { logConfig } = require('../../config/app-settings').winston;
 const logger = winston.createLogger(logConfig);
-
-const pods = require('../../k8s/pods.js');
 const chai = require('chai');
 const fs = require('fs');
 const nock = require('nock');
@@ -25,7 +23,11 @@ const { EventEmitter } = require('events');
 const https = require('https');
 
 describe('k8s pods api tests:', () => {
+  process.env.CIDR_WHITELIST="10.0.0.0/8";
+  process.env.METRICS_PATH_WHITELIST="/metrics";
+  const pods = require('../../k8s/pods.js');
   beforeEach(() => {
+
   });
 
   afterEach(() => {
@@ -174,6 +176,57 @@ describe('k8s pods api tests:', () => {
     }, () => {
       httpsRequestMock.restore();
       done();
+    });
+  });
+});
+
+
+describe('k8s pods whitelisting test:', () => {
+  beforeEach(() => {
+    delete require.cache[require.resolve('../../metrics/whitelistUtil')];
+    delete require.cache[require.resolve('../../k8s/pods')];
+  });
+
+  afterEach(() => {
+    nock.cleanAll();
+  });
+
+  it('test get pods one whitelisted ip', (done) => {
+    process.env.CIDR_WHITELIST="10.0.0.1/24";
+    process.env.METRICS_PATH_WHITELIST="/metrics";
+    const pods = require('../../k8s/pods.js');
+    nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
+      .get(`/api/v1/namespaces/project1/pods`)
+      .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
+
+    const podsPromise = pods.podData('project1', 'myapp-', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    podsPromise.then((podsIPMap) => {
+      logger.debug(podsIPMap);
+      chai.expect(podsIPMap.size).to.equal(1);
+      chai.expect(podsIPMap.get('10.0.0.1')).to.include({ podName: 'myapp-deployment-1-r70ts', podIP: '10.0.0.1', uid: '58a9acb7-479d-11e8-9b0c-fa163ef60be1' });
+      done();
+    }, (error) => {
+      logger.debug(`error received on promise ${error}`);
+      done(new Error(`error received from promise ${error}`));
+    });
+  });
+
+  it('test get pods no whitelisted ip', (done) => {
+    process.env.CIDR_WHITELIST="192.168.0.0/24";
+    process.env.METRICS_PATH_WHITELIST="/metrics";
+    const pods = require('../../k8s/pods.js');
+    nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
+      .get(`/api/v1/namespaces/project1/pods`)
+      .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
+
+    const podsPromise = pods.podData('project1', 'myapp-', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    podsPromise.then((podsIPMap) => {
+      logger.debug(podsIPMap);
+      chai.expect(podsIPMap.size).to.equal(0);
+      done();
+    }, (error) => {
+      logger.debug(`error received on promise ${error}`);
+      done(new Error(`error received from promise ${error}`));
     });
   });
 });

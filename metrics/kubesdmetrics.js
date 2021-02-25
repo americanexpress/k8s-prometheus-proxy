@@ -21,29 +21,43 @@ const querystring = require('querystring');
 const httpProxy = require('http-proxy');
 
 const apiProxy = httpProxy.createProxyServer({secure: false, ignorePath: true});
+const whiteListUtil = require('./whitelistUtil');
+const podmetricsUtil = require('./podmetricsUtil');
+
+function sendError(res) {
+  res.writeHead(500, {
+    'Content-Type': 'text/plain'
+  });
+  res.end('#Unable to collect metrics');
+}
 
 
-function handleMetricsRoute(req, res, appUrlPrefix) {
+function handleMetricsRoute(req, res) {
   const pod = req.query.pod;
+  if(!whiteListUtil.isWhiteListedIP(pod)) {
+    logger.error(`pod ip ${pod} is not part of whitelisted cidr`);
+    sendError(res);
+    return;
+  }
+
   const targetPort = req.query.target_port;
   let scheme = 'http';
   if (req.query.target_scheme != null) {
     scheme = req.query.target_scheme;
   }
+  console.log('req url ' + req.url);
   const parsedUrl = url.parse(req.url);
   let queryObj = querystring.parse(parsedUrl.query);
   delete queryObj.pod;
   delete queryObj.target_scheme;
   delete queryObj.target_port;
-  let targetPath;
-  if(appUrlPrefix === null || appUrlPrefix === undefined || appUrlPrefix.trim() === '') {
-    targetPath = parsedUrl.pathname.slice(7);
-  } else {
-    let p = parsedUrl.pathname;
-    targetPath = p.substring(p.indexOf(appUrlPrefix.trim()) + appUrlPrefix.trim().length).slice(7);
+  let targetPath = podmetricsUtil.deriveUpstreamURI(parsedUrl.pathname, '/kubesd');
+  logger.debug(`using target path ${targetPath}`);
+  if(!whiteListUtil.isWhitelistedPath(targetPath)) {
+    sendError(res);
+    return;
   }
 
-  logger.debug(`using target path ${targetPath}`);
 
   const targetUrl = url.format({
     protocol: scheme,
@@ -62,6 +76,7 @@ function handleMetricsRoute(req, res, appUrlPrefix) {
     res.end('#Unable to collect metrics');
   });
 }
+
 
 module.exports = {
   handleMetricsRoute,

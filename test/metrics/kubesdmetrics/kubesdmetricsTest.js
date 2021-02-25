@@ -26,6 +26,12 @@ const events = require('events');
 
 describe('kubesd metrics tests:', () => {
 
+  beforeEach(() => {
+    delete require.cache[require.resolve('../../../metrics/whitelistUtil')];
+    process.env.CIDR_WHITELIST="10.0.0.1/24";
+    process.env.METRICS_PATH_WHITELIST="/metrics";
+  })
+
   afterEach(() => {
     nock.cleanAll();
   });
@@ -54,6 +60,7 @@ describe('kubesd metrics tests:', () => {
       chai.expect(parsedUrl.protocol).to.equal("https:");
       chai.expect(parsedUrl.port).to.equal("3005");
       chai.expect(parsedUrl.pathname).to.equal("/metrics");
+      done();
       return;
     }
     httpProxyStub.createProxyServer = function(obj) {
@@ -62,7 +69,7 @@ describe('kubesd metrics tests:', () => {
 
     const kubesdmetrics = proxyquire('../../../metrics/kubesdmetrics', {'http-proxy': httpProxyStub});
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
-    done();
+
   });
 
   it('test pod metrics success with no appurl prefix', (done) => {
@@ -76,12 +83,13 @@ describe('kubesd metrics tests:', () => {
       },
     });
 
-    const response = httpMocks.createResponse({
+    var response = httpMocks.createResponse({
       eventEmitter: events.EventEmitter,
     });
 
     const httpProxyStub = {};
     const apiProxyStub = {};
+    let reqCompleted = 0;
     apiProxyStub.web = function(req, res, targetObj, errorCallback) {
       logger.debug(targetObj);
       const parsedUrl = url.parse(targetObj.target)
@@ -89,6 +97,10 @@ describe('kubesd metrics tests:', () => {
       chai.expect(parsedUrl.protocol).to.equal("https:");
       chai.expect(parsedUrl.port).to.equal("3005");
       chai.expect(parsedUrl.pathname).to.equal("/metrics");
+      reqCompleted = reqCompleted + 1;
+      if(reqCompleted === 4) {
+        done();
+      }
       return;
     }
     httpProxyStub.createProxyServer = function(obj) {
@@ -97,10 +109,19 @@ describe('kubesd metrics tests:', () => {
 
     const kubesdmetrics = proxyquire('../../../metrics/kubesdmetrics', {'http-proxy': httpProxyStub});
     kubesdmetrics.handleMetricsRoute(request, response, null);
+    response = httpMocks.createResponse({
+      eventEmitter: events.EventEmitter,
+    });
     kubesdmetrics.handleMetricsRoute(request, response, undefined);
+    response = httpMocks.createResponse({
+      eventEmitter: events.EventEmitter,
+    });
     kubesdmetrics.handleMetricsRoute(request, response, '');
+    response = httpMocks.createResponse({
+      eventEmitter: events.EventEmitter,
+    });
     kubesdmetrics.handleMetricsRoute(request, response, '  ');
-    done();
+
   });
 
   it('test pod metrics default target_scheme', (done) => {
@@ -126,6 +147,7 @@ describe('kubesd metrics tests:', () => {
       chai.expect(parsedUrl.protocol).to.equal("http:");
       chai.expect(parsedUrl.port).to.equal("3005");
       chai.expect(parsedUrl.pathname).to.equal("/metrics");
+      done();
       return;
     }
     httpProxyStub.createProxyServer = function(obj) {
@@ -134,7 +156,7 @@ describe('kubesd metrics tests:', () => {
 
     const kubesdmetrics = proxyquire('../../../metrics/kubesdmetrics', {'http-proxy': httpProxyStub});
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
-    done();
+
   });
 
   it('test pod metrics error', (done) => {
@@ -178,3 +200,4 @@ describe('kubesd metrics tests:', () => {
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
   });
 });
+

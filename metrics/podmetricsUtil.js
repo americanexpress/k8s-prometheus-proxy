@@ -32,13 +32,16 @@ function deriveRespHost(podMetricsRequest) {
 }
 
 
-function deriveUpstreamURI(pathname) {
+function deriveUpstreamURI(pathname, ctxt) {
   logger.debug(`pathname to derive upstream URI : ${pathname}`)
   let upstreamURI = "/";
   const txtArr = pathname.split('/');
   let i =4;
-  if(!pathname.startsWith('/mproxy')) {
-    i=5;
+  if(ctxt === '/kubesd') {
+    i=2;
+  }
+  if(!pathname.startsWith(ctxt)) {
+    i++;
   }
   for(; i<txtArr.length; i++) {
     let txtToAppend = txtArr[i];

@@ -16,6 +16,8 @@ const winston = require('winston');
 const { logConfig } = require('../config/app-settings').winston;
 const logger = winston.createLogger(logConfig);
 
+const whitelistUtil = require('../metrics/whitelistUtil');
+
 function getPodIPMap(upstreamNamespace, upstreamService, k8sCACert, k8sToken) {
   const options = {
     hostname: process.env.KUBERNETES_SERVICE_HOST,
@@ -50,11 +52,13 @@ function getPodIPMap(upstreamNamespace, upstreamService, k8sCACert, k8sToken) {
               const podIPMapKey = entry.status.podIP;
               const podIPAddr = entry.status.podIP;
               const podUid = entry.metadata.uid;
-              if (podName.startsWith(upstreamService) && podState === 'Running') {
-                podIPMap.set(podIPMapKey, { podName, podIP: podIPAddr, uid: podUid });
+              if(whitelistUtil.isWhiteListedIP(podIPAddr)) {
+                if (podName.startsWith(upstreamService) && podState === 'Running') {
+                  podIPMap.set(podIPMapKey, { podName, podIP: podIPAddr, uid: podUid });
+                }
               }
-              resolve(podIPMap);
             });
+            resolve(podIPMap);
           } else {
             logger.debug(`No pods are running for ${upstreamNamespace}`);
             reject(new Error(`No pods are running for ${upstreamNamespace}`));

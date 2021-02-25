@@ -36,12 +36,14 @@ Where, <br>
 
 
 Implementation logic
-1. Query kubernetes master to fetch all pods in the given kubernetes namespace
-2. Filter pods which are in running state and whose name starts with podname prefix specified in url
-3. Query each pod individually using `http(s)://<pod ip>:<upstreamPort>/<metrics uri>` (It uses https if ssl=true)
-4. Loop through each metric and add podip and podname as labels to metrics
-5. Write all these updated metrics onto response
-6. Close response when all pods have been scraped and their updated metrics are written on response
+1. Check if the metrics path is whitelisted path by matching it with regular expressions defined in METRICS_PATH_WHITELIST environment variable, if it does not match then return HTTP 500
+2. Query kubernetes master to fetch all pods in the given kubernetes namespace
+3. Filter pods which are in running state and whose name starts with podname prefix specified in url
+4. Check if the pod IP address is within CIDR ranges defined in CIDR_WHITELIST environment variable. If it is not then ignore that pod IP
+5. Query each pod individually using `http(s)://<pod ip>:<upstreamPort>/<metrics uri>` (It uses https if ssl=true)
+6. Loop through each metric and add podip and podname as labels to metrics
+7. Write all these updated metrics onto response
+8. Close response when all pods have been scraped and their updated metrics are written on response
 
 Example prometheus config
 ```
@@ -63,7 +65,8 @@ Example prometheus config
 
 #### Metrics using kubernetes service discovery
 
-When kubernetes api server can be accessed from prometheus server running external to cluster, we can setup kubernetes service discovery and use proxy to pull metric from a pod
+When kubernetes api server can be accessed from prometheus server running external to cluster, we can setup kubernetes service discovery and use proxy to pull metric from a pod.
+Same whitelist checks are performed for checking IP address in whitelisted CIDR and metrics URI matches one of the regex defined in METRICS_PATH_WHITELIST before making http call to get the metrics.
 For this job config will look like below
 
 ```  
@@ -118,20 +121,22 @@ In above example, it will keep the pods whose pod name contains `myapp1` text, a
 
 ## Environment Variables
 
-| Environment Variable |                     Default Value                    |                                                                                Description                                                                               |
-|:--------------------:|:----------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-|   K8S_GLOBAL_TOKEN   |                                                      | Bearer token used to query kubernetes master to get pod                                                                                                                  |
-|      TOKEN_FILE      |  /var/run/secrets/kubernetes.io/serviceaccount/token | Absolute path of the file where bearer token is read from. If K8S_GLOBAL_TOKEN is defined then it takes precedence over TOKEN_FILE                                       |
-|      K8S_CACERT      | /var/run/secrets/kubernetes.io/serviceaccount/ca.crt | Absolute path of CA certificate file. Used to talk to kubernetes master                                                                                                  |
-|    K8S_NODEJS_PORT   |             5050 for http, 5053 for https            | Port on which app listens on                                                                                                                                             |
-|       HTTP_PORT      |                         5050                         | IF certificate environment variables are not defined then http server is started. It will listen on this port. If K8S_NODEJS_PORT is defined then that takes precendence |
-|      HTTPS_PORT      |                         5053                         | IF certificate environment variables are defined then https server is started. It will listen on this port. If K8S_NODEJS_PORT is defined then that takes precendence    |
-|   METRICS_HTTP_PORT  |                         5055                         | prometheus metrics for the proxy app are exposed on this port. It should be different than http/https port on which application listens on                               |
-|     CERT_KEY_FILE    |                                                      | private key file                                                                                                                                                         |
-|       CERT_FILE      |                                                      | public key file                                                                                                                                                          |
-|     CERT_CA_FILE     |                                                      | CA certificate file                                                                                                                                                      |
-| CERT_KEY_PASSWD_FILE |                                                      | password for private key is read from this file                                                                                                                          |
-|    APP_URL_PREFIX    |                                                      | prefix context path. if set all URIs will be prefixed with this context. e.g. if value is set to v1 then URIs will be /v1/mproxy/ and /v1/kubesd/                        |
+| Environment Variable |                     Default Value                    |   Required    |                                                                            Description                                                                                   |
+|:--------------------:|:----------------------------------------------------:|:-------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+|   K8S_GLOBAL_TOKEN   |                                                      |    true       | Bearer token used to query kubernetes master to get pod                                                                                                                  |
+|    CIDR_WHITELIST    |                                                      |    true       | comma separated CIDR list, the pod ip addresses should be within this defined ranges of CIDR                                                                             |     
+|METRICS_PATH_WHITELIST|                                                      |    true       | comma separated metrics path regex whitelist. the metrics uri will be validated against these regex expressions and only matching URI will be queried for metrics        |
+|      TOKEN_FILE      |  /var/run/secrets/kubernetes.io/serviceaccount/token |    false      | Absolute path of the file where bearer token is read from. If K8S_GLOBAL_TOKEN is defined then it takes precedence over TOKEN_FILE                                       |
+|      K8S_CACERT      | /var/run/secrets/kubernetes.io/serviceaccount/ca.crt |    false      | Absolute path of CA certificate file. Used to talk to kubernetes master                                                                                                  |
+|    K8S_NODEJS_PORT   |             5050 for http, 5053 for https            |    false      | Port on which app listens on                                                                                                                                             |
+|       HTTP_PORT      |                         5050                         |    false      | If certificate environment variables are not defined then http server is started. It will listen on this port. If K8S_NODEJS_PORT is defined then that takes precedence  |
+|      HTTPS_PORT      |                         5053                         |    false      | If certificate environment variables are defined then https server is started. It will listen on this port. If K8S_NODEJS_PORT is defined then that takes precedence     |
+|   METRICS_HTTP_PORT  |                         5055                         |    false      | prometheus metrics for the proxy app are exposed on this port. It should be different than http/https port on which application listens on                               |
+|     CERT_KEY_FILE    |                                                      |    false      | private key file                                                                                                                                                         |
+|       CERT_FILE      |                                                      |    false      | public key file                                                                                                                                                          |
+|     CERT_CA_FILE     |                                                      |    false      | CA certificate file                                                                                                                                                      |
+| CERT_KEY_PASSWD_FILE |                                                      |    false      | password for private key is read from this file                                                                                                                          |
+|    APP_URL_PREFIX    |                                                      |    false      | prefix context path. if set all URIs will be prefixed with this context. e.g. if value is set to v1 then URIs will be /v1/mproxy/ and /v1/kubesd/                        |
 
 
 ## Contributing

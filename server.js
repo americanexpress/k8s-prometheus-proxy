@@ -73,7 +73,8 @@ router.get('/mproxy/:upstreamNamespace/:upstreamService/*', (req, res) => {
 });
 
 router.get("/kubesd/*", (req, res) => {
-  kubesdMetrics.handleMetricsRoute(req, res, appUrlPrefix);
+  console.log('from server.js req url ' + req.url);
+  kubesdMetrics.handleMetricsRoute(req, res);
 });
 
 const certkeyFile = process.env.CERT_KEY_FILE;
