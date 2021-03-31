@@ -138,6 +138,9 @@ In above example, it will keep the pods whose pod name contains `myapp1` text, a
 | CERT_KEY_PASSWD_FILE |                                                      |    false      | password for private key is read from this file                                                                                                                          |
 |    APP_URL_PREFIX    |                                                      |    false      | prefix context path. if set all URIs will be prefixed with this context. e.g. if value is set to v1 then URIs will be /v1/mproxy/ and /v1/kubesd/                        |
 
+**Note:**
+when metrics are exposed over https and certificates does not have pod ip as Subject name or Subject Alternative Name then the call to get metrics will fail giving invalid certificate error. In this case you can set environment variable NODE_TLS_REJECT_UNAUTHORIZED=0 which will disable certificate validation.  
+
 
 ## Contributing
 
