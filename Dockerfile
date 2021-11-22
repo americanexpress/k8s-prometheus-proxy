@@ -9,7 +9,7 @@
 # is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 # or implied. See the License for the specific language governing permissions and limitations under
 # the License.
-FROM node:10
+FROM node:14
 EXPOSE 8443 8080 8085
 COPY dist /home/node/app
 WORKDIR /home/node/app
