@@ -14,6 +14,7 @@
 
 const winston = require('winston');
 const { logConfig } = require('../../config/app-settings').winston;
+
 const logger = winston.createLogger(logConfig);
 
 const app = require('../../labels/podlabels.js');
@@ -70,7 +71,6 @@ describe('test labels', () => {
     chai.expect(metricsResponse[0]).to.equal('# my comment');
   });
 
-
   it('test comment and metric', () => {
     const metricsArray = [
       '# my comment',
@@ -86,7 +86,6 @@ describe('test labels', () => {
     chai.expect(metricsResponse[2]).to.equal('nginx_http_connections{podname="mypod1",podip="1.1.1.1",state="waiting"} 21');
     chai.expect(metricsResponse[3]).to.equal('nginx_metric_errors_total{podname="mypod1",podip="1.1.1.1"} 0');
   });
-
 
   it('test comment in between metrics', () => {
     const metricsArray = [
@@ -109,7 +108,6 @@ describe('test labels', () => {
     chai.expect(metricsResponse[5]).to.equal('nginx_http_response_2xx_count{podname="mypod1",podip="1.1.1.1"} 21');
     chai.expect(metricsResponse[6]).to.equal('nginx_metric_response_5xx_count{podname="mypod1",podip="1.1.1.1"} 0');
   });
-
 
   it('test metrics with timestamp', () => {
     const metricsArray = [

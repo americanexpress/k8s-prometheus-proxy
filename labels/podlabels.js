@@ -13,7 +13,7 @@
  */
 
 function metricsWithPodLabels(metricsArray, labelStr) {
-  let metricsResponseString = "";
+  let metricsResponseString = '';
   let counter = 0;
   if (metricsArray.length > 0) {
     metricsArray.forEach((str) => {

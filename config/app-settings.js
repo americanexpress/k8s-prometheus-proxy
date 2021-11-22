@@ -12,7 +12,6 @@
  * the License.
  */
 
-
 const winston = require('winston');
 
 const appSettings = {
@@ -20,10 +19,10 @@ const appSettings = {
     logConfig: {
       level: 'debug',
       transports: [
-        new winston.transports.Console({format: winston.format.simple()})
-      ]
+        new winston.transports.Console({ format: winston.format.simple() }),
+      ],
     },
-  }
+  },
 };
 
 module.exports = appSettings;

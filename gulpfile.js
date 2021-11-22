@@ -12,16 +12,14 @@
  * the License.
  */
 
-var gulp = require('gulp');
+const gulp = require('gulp');
 
-var srcPath = [
-    '**/*',
-    '!gulpfile.js',
-    '!.*',
-    '!dist/**',
+const srcPath = [
+  '**/*',
+  '!gulpfile.js',
+  '!.*',
+  '!dist/**',
 ];
 
-gulp.task('build', function () {
-    return gulp.src(srcPath)
-        .pipe(gulp.dest('dist/'))
-});
+gulp.task('build', () => gulp.src(srcPath)
+  .pipe(gulp.dest('dist/')));

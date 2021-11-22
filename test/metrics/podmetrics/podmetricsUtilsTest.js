@@ -12,40 +12,40 @@
  * the License.
  */
 
-const podmetricsUtils = require('../../../metrics/podmetricsUtil.js');
 const chai = require('chai');
 const http = require('http');
+const podmetricsUtils = require('../../../metrics/podmetricsUtil.js');
 
 describe('upstream uri test', () => {
   it('test path', (done) => {
     chai.expect(podmetricsUtils.deriveUpstreamURI('/v1/mproxy/prj/serv/metrics', '/mproxy')).to.be.equal('/metrics');
     chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/metrics', '/mproxy')).to.be.equal('/metrics');
-    chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/metrics?some=thing&ssl=true','/mproxy')).to.be.equal('/metrics');
-    chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/my/ctxt/metrics','/mproxy')).to.be.equal('/my/ctxt/metrics');
-    chai.expect(podmetricsUtils.deriveUpstreamURI('/kubesd/my/ctxt/metrics','/kubesd')).to.be.equal('/my/ctxt/metrics');
+    chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/metrics?some=thing&ssl=true', '/mproxy')).to.be.equal('/metrics');
+    chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/my/ctxt/metrics', '/mproxy')).to.be.equal('/my/ctxt/metrics');
+    chai.expect(podmetricsUtils.deriveUpstreamURI('/kubesd/my/ctxt/metrics', '/kubesd')).to.be.equal('/my/ctxt/metrics');
     done();
   });
 });
 
 describe('derive response host test', () => {
-  let Request = {
+  const Request = {
     host: null,
-    init : function(remoteAddress, host) {
+    init(remoteAddress, host) {
       this.socket.remoteAddress = remoteAddress;
       this.host = host;
       return this;
     },
-    socket : {
-      remoteAddress : '',
+    socket: {
+      remoteAddress: '',
     },
-    getHeader : function(h) {
+    getHeader(h) {
       return this.host;
-    }
-  }
+    },
+  };
   it('test resp host', (done) => {
-    chai.expect(podmetricsUtils.deriveRespHost(Object.create(Request).init('10.1.1.1','host'))).to.be.equal('10.1.1.1');
-    chai.expect(podmetricsUtils.deriveRespHost(Object.create(Request).init(undefined,'10.1.1.2'))).to.be.equal('10.1.1.2');
-    chai.expect(podmetricsUtils.deriveRespHost(Object.create(Request).init('10.1.1.1:443','host'))).to.be.equal('10.1.1.1');
+    chai.expect(podmetricsUtils.deriveRespHost(Object.create(Request).init('10.1.1.1', 'host'))).to.be.equal('10.1.1.1');
+    chai.expect(podmetricsUtils.deriveRespHost(Object.create(Request).init(undefined, '10.1.1.2'))).to.be.equal('10.1.1.2');
+    chai.expect(podmetricsUtils.deriveRespHost(Object.create(Request).init('10.1.1.1:443', 'host'))).to.be.equal('10.1.1.1');
     done();
   });
 });

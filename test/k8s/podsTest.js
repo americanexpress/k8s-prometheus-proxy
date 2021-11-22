@@ -14,6 +14,7 @@
 
 const winston = require('winston');
 const { logConfig } = require('../../config/app-settings').winston;
+
 const logger = winston.createLogger(logConfig);
 const chai = require('chai');
 const fs = require('fs');
@@ -23,8 +24,8 @@ const { EventEmitter } = require('events');
 const https = require('https');
 
 describe('k8s pods api tests:', () => {
-  process.env.CIDR_WHITELIST="10.0.0.0/8";
-  process.env.METRICS_PATH_WHITELIST="/metrics";
+  process.env.CIDR_WHITELIST = '10.0.0.0/8';
+  process.env.METRICS_PATH_WHITELIST = '/metrics';
   const pods = require('../../k8s/pods.js');
   beforeEach(() => {
 
@@ -36,10 +37,15 @@ describe('k8s pods api tests:', () => {
 
   it('test get pods', (done) => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
 
-    const podsPromise = pods.podData('project1', 'myapp-', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'myapp-',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     podsPromise.then((podsIPMap) => {
       logger.debug(podsIPMap);
       chai.expect(podsIPMap.size).to.equal(2);
@@ -54,10 +60,15 @@ describe('k8s pods api tests:', () => {
 
   it('test get no pod', (done) => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
 
-    const podsPromise = pods.podData('project1','randomname', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'randomname',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     podsPromise.then((podsIPMap) => {
       logger.debug(podsIPMap);
       chai.expect(podsIPMap.size).to.equal(0);
@@ -69,10 +80,15 @@ describe('k8s pods api tests:', () => {
 
   it('test empty response', (done) => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .reply(200, '{}');
 
-    const podsPromise = pods.podData('project1','randomname', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'randomname',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     podsPromise.then((podsIPMap) => {
       done(new Error('should not succeed'));
     }, (error) => {
@@ -80,13 +96,17 @@ describe('k8s pods api tests:', () => {
     });
   });
 
-
   it('test kubemaster unauthorized', (done) => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .reply(401, 'Unauthorized');
 
-    const podsPromise = pods.podData('project1','randomname', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'randomname',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     podsPromise.then(() => {
       done(new Error('should not succeed'));
     }, () => {
@@ -96,11 +116,16 @@ describe('k8s pods api tests:', () => {
 
   it('test kubemaster connection error', (done) => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .delayConnection(10000)
       .reply(500, 'Internal Server Error');
 
-    const podsPromise = pods.podData('project1','randomname', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'randomname',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     podsPromise.then(() => {
       done(new Error('should not succeed'));
     }, () => {
@@ -110,13 +135,18 @@ describe('k8s pods api tests:', () => {
 
   it('test error event', (done) => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .replyWithError({
         message: 'something awful happened',
-        code: 'AWFUL_ERROR'
+        code: 'AWFUL_ERROR',
       });
 
-    const podsPromise = pods.podData('project1','randomname', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'randomname',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     podsPromise.then(() => {
       done(new Error('should not succeed'));
     }, () => {
@@ -125,13 +155,18 @@ describe('k8s pods api tests:', () => {
   });
 
   it('test error event on request  ', (done) => {
-    EventEmitter.prototype.setTimeout =  function(timeo){};
-    EventEmitter.prototype.end =  function() {};
-    EventEmitter.prototype.destroy =  function() {};
+    EventEmitter.prototype.setTimeout = function (timeo) {};
+    EventEmitter.prototype.end = function () {};
+    EventEmitter.prototype.destroy = function () {};
     const emitter = new EventEmitter();
     const httpsRequestMock = sinon.stub(https, 'request').returns(emitter);
 
-    const podsPromise = pods.podData('project1','randomname', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'randomname',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     emitter.emit('error');
     podsPromise.then(() => {
       httpsRequestMock.restore();
@@ -143,12 +178,17 @@ describe('k8s pods api tests:', () => {
   });
 
   it('test timeout event on request  ', (done) => {
-    EventEmitter.prototype.setTimeout =  function(timeo){};
-    EventEmitter.prototype.end =  function() {};
-    EventEmitter.prototype.destroy =  function() {};
+    EventEmitter.prototype.setTimeout = function (timeo) {};
+    EventEmitter.prototype.end = function () {};
+    EventEmitter.prototype.destroy = function () {};
     const emitter = new EventEmitter();
     const httpsRequestMock = sinon.stub(https, 'request').returns(emitter);
-    const podsPromise = pods.podData('project1','randomname', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'randomname',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     emitter.emit('timeout');
 
     podsPromise.then(() => {
@@ -161,13 +201,18 @@ describe('k8s pods api tests:', () => {
   });
 
   it('test error event on response  ', (done) => {
-    EventEmitter.prototype.setTimeout =  function(timeo){};
-    EventEmitter.prototype.end =  function() {};
-    EventEmitter.prototype.destroy =  function() {};
+    EventEmitter.prototype.setTimeout = function (timeo) {};
+    EventEmitter.prototype.end = function () {};
+    EventEmitter.prototype.destroy = function () {};
     emitterReq = new EventEmitter();
     emitterResp = new EventEmitter();
     const httpsRequestMock = sinon.stub(https, 'request').returns(emitterReq);
-    const podsPromise = pods.podData('project1','randomname', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'randomname',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     httpsRequestMock.callArgWith(1, emitterResp);
     emitterResp.emit('error');
     podsPromise.then(() => {
@@ -180,7 +225,6 @@ describe('k8s pods api tests:', () => {
   });
 });
 
-
 describe('k8s pods whitelisting test:', () => {
   beforeEach(() => {
     delete require.cache[require.resolve('../../metrics/whitelistUtil')];
@@ -192,14 +236,19 @@ describe('k8s pods whitelisting test:', () => {
   });
 
   it('test get pods one whitelisted ip', (done) => {
-    process.env.CIDR_WHITELIST="10.0.0.1/24";
-    process.env.METRICS_PATH_WHITELIST="/metrics";
+    process.env.CIDR_WHITELIST = '10.0.0.1/24';
+    process.env.METRICS_PATH_WHITELIST = '/metrics';
     const pods = require('../../k8s/pods.js');
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
 
-    const podsPromise = pods.podData('project1', 'myapp-', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'myapp-',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     podsPromise.then((podsIPMap) => {
       logger.debug(podsIPMap);
       chai.expect(podsIPMap.size).to.equal(1);
@@ -212,14 +261,19 @@ describe('k8s pods whitelisting test:', () => {
   });
 
   it('test get pods no whitelisted ip', (done) => {
-    process.env.CIDR_WHITELIST="192.168.0.0/24";
-    process.env.METRICS_PATH_WHITELIST="/metrics";
+    process.env.CIDR_WHITELIST = '192.168.0.0/24';
+    process.env.METRICS_PATH_WHITELIST = '/metrics';
     const pods = require('../../k8s/pods.js');
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
 
-    const podsPromise = pods.podData('project1', 'myapp-', process.env.OPENSHIFT_CACERT, 'SOMETOKEN');
+    const podsPromise = pods.podData({
+      upstreamNamespace: 'project1',
+      upstreamService: 'myapp-',
+      k8sCACert: process.env.OPENSHIFT_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     podsPromise.then((podsIPMap) => {
       logger.debug(podsIPMap);
       chai.expect(podsIPMap.size).to.equal(0);

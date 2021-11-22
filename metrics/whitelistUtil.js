@@ -15,29 +15,30 @@
 const ipRangeCheck = require('ip-range-check');
 const winston = require('winston');
 const { logConfig } = require('../config/app-settings').winston;
+
 const logger = winston.createLogger(logConfig);
 const metricsPathWhiteList = createRegexArray(process.env.METRICS_PATH_WHITELIST);
 const cidrWhitelist = createWhiteListArray(process.env.CIDR_WHITELIST);
-const validNamespaceRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
+const validNamespaceRegex = /^[\da-z]([\da-z-]*[\da-z])?$/;
 
 function isWhitelistedPath(targetPath) {
   let whiteListMatchFound = false;
-  for(let i=0; i<metricsPathWhiteList.length; i++) {
-    if(targetPath.match(metricsPathWhiteList[i])) {
-      logger.debug(`matched with regex ${metricsPathWhiteList[i]}`);
+  for (const element of metricsPathWhiteList) {
+    if (targetPath.match(element)) {
+      logger.debug(`matched with regex ${element}`);
       whiteListMatchFound = true;
       break;
     }
   }
-  if(!whiteListMatchFound) {
+  if (!whiteListMatchFound) {
     logger.error(`target path is not part of whitelisted path ${metricsPathWhiteList}`);
   }
   return whiteListMatchFound;
 }
 
 function isWhiteListedIP(podIP) {
-  const isWhiteListed = ipRangeCheck(podIP,cidrWhitelist);
-  if(!isWhiteListed) {
+  const isWhiteListed = ipRangeCheck(podIP, cidrWhitelist);
+  if (!isWhiteListed) {
     logger.error(`ip ${podIP} is not part of whitelisted CIDR ${cidrWhitelist}`);
   }
   return isWhiteListed;
@@ -48,8 +49,7 @@ function isValidNamespaceName(projectName) {
 }
 
 function createWhiteListArray(csvStr) {
-  if(csvStr)
-    return csvStr.split(',');
+  if (csvStr) return csvStr.split(',');
   return [];
 }
 

@@ -14,6 +14,7 @@
 
 const winston = require('winston');
 const { logConfig } = require('../../../config/app-settings').winston;
+
 const logger = winston.createLogger(logConfig);
 
 const chai = require('chai');
@@ -27,13 +28,14 @@ const https = require('https');
 const http = require('http');
 
 delete require.cache[require.resolve('../../../metrics/whitelistUtil')];
-process.env.CIDR_WHITELIST="10.0.0.0/8";
-process.env.METRICS_PATH_WHITELIST="/metrics";
+process.env.CIDR_WHITELIST = '10.0.0.0/8';
+process.env.METRICS_PATH_WHITELIST = '/metrics';
 const metrics = require('../../../metrics/podmetrics.js');
 const pods = require('../../../k8s/pods.js');
 
 describe('pod metrics tests with no data:', () => {
-  let request, response;
+  let request; let
+    response;
 
   beforeEach(() => {
     request = httpMocks.createRequest({
@@ -43,7 +45,7 @@ describe('pod metrics tests with no data:', () => {
         upstreamNamespace: 'project1',
         upstreamService: 'myapp-',
         upstreamURI: '/metrics',
-      }
+      },
     });
 
     response = httpMocks.createResponse({
@@ -54,7 +56,6 @@ describe('pod metrics tests with no data:', () => {
   afterEach(() => {
     nock.cleanAll();
   });
-
 
   it('test podsDataPromise promise error', (done) => {
     const podStub = sinon.stub(pods, 'podData')
@@ -90,23 +91,23 @@ describe('pod metrics tests with no data:', () => {
 });
 
 describe('pod request headers tests', () => {
-
-  let request, response;
+  let request; let
+    response;
   it('test request headers', (done) => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
 
     nock('http://10.0.0.1:3005', {
       reqheaders: {
         authorization: 'bearer test',
-      }
+      },
     }).get('/metrics').reply(200, fs.readFileSync('test/mockResponses/10.0.0.1.metrics.txt').toString());
 
     nock('http://10.1.1.2:3005', {
       reqheaders: {
         authorization: 'bearer test',
-      }
+      },
     }).get('/metrics').reply(200, fs.readFileSync('test/mockResponses/10.1.1.2.metrics.txt').toString());
 
     const request = httpMocks.createRequest({
@@ -122,8 +123,8 @@ describe('pod request headers tests', () => {
       },
       headers: {
         authorization: 'bearer test',
-        host: 'localhost:30020'
-      }
+        host: 'localhost:30020',
+      },
     });
     const response = httpMocks.createResponse({
       eventEmitter: events.EventEmitter,
@@ -147,14 +148,15 @@ describe('pod request headers tests', () => {
 });
 
 describe('pod metrics tests:', () => {
-  let request, response;
-  EventEmitter.prototype.setTimeout =  function(timeo){};
-  EventEmitter.prototype.end =  function() {};
-  EventEmitter.prototype.destroy =  function() {};
+  let request; let
+    response;
+  EventEmitter.prototype.setTimeout = function (timeo) {};
+  EventEmitter.prototype.end = function () {};
+  EventEmitter.prototype.destroy = function () {};
 
   beforeEach(() => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
 
     request = httpMocks.createRequest({
@@ -289,7 +291,6 @@ describe('pod metrics tests:', () => {
       .delayConnection(20000)
       .reply(500, 'Internal Server Error');
 
-
     metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
     response.on('end', () => {
       const rspData = response._getData();
@@ -338,7 +339,6 @@ describe('pod metrics tests:', () => {
       emitterReq.emit('error');
     }, 500);
 
-
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received${rspData}`);
@@ -363,7 +363,6 @@ describe('pod metrics tests:', () => {
       emitterReq.emit('timeout');
     }, 500);
 
-
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received${rspData}`);
@@ -374,15 +373,14 @@ describe('pod metrics tests:', () => {
       done();
     });
   });
-
-
 });
 
 describe('pod multilevel context tests:', () => {
-  let request, response;
+  let request; let
+    response;
   beforeEach(() => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
 
     response = httpMocks.createResponse({
@@ -428,7 +426,6 @@ describe('pod multilevel context tests:', () => {
     });
   });
 
-
   it('test multilevel context metrics with query params', (done) => {
     const request = httpMocks.createRequest({
       method: 'GET',
@@ -455,7 +452,6 @@ describe('pod multilevel context tests:', () => {
       done();
     });
   });
-
 });
 
 describe('finishProcessing test', () => {
@@ -478,20 +474,20 @@ describe('finishProcessing test', () => {
       chai.expect(rspData).to.equal('#Unable to collect data.');
       done();
     });
-    metrics.finishProcessing(2,1,1,0,response);
-
+    metrics.finishProcessing(2, 1, 1, 0, response);
   });
 });
 
 describe('pod metrics namespace name validation', () => {
-  let request, response;
-  EventEmitter.prototype.setTimeout =  function(timeo){};
-  EventEmitter.prototype.end =  function() {};
-  EventEmitter.prototype.destroy =  function() {};
+  let request; let
+    response;
+  EventEmitter.prototype.setTimeout = function (timeo) {};
+  EventEmitter.prototype.end = function () {};
+  EventEmitter.prototype.destroy = function () {};
 
   beforeEach(() => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/-project1/pods`)
+      .get('/api/v1/namespaces/-project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
 
     request = httpMocks.createRequest({
@@ -536,14 +532,15 @@ describe('pod metrics namespace name validation', () => {
 });
 
 describe('pod metrics upstream path name validation', () => {
-  let request, response;
-  EventEmitter.prototype.setTimeout =  function(timeo){};
-  EventEmitter.prototype.end =  function() {};
-  EventEmitter.prototype.destroy =  function() {};
+  let request; let
+    response;
+  EventEmitter.prototype.setTimeout = function (timeo) {};
+  EventEmitter.prototype.end = function () {};
+  EventEmitter.prototype.destroy = function () {};
 
   beforeEach(() => {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
-      .get(`/api/v1/namespaces/project1/pods`)
+      .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
 
     request = httpMocks.createRequest({

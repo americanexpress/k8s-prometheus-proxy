@@ -14,6 +14,7 @@
 
 const winston = require('winston');
 const { logConfig } = require('../config/app-settings').winston;
+
 const logger = winston.createLogger(logConfig);
 
 function deriveRespHost(podMetricsRequest) {
@@ -31,27 +32,26 @@ function deriveRespHost(podMetricsRequest) {
   return respHost;
 }
 
-
 function deriveUpstreamURI(pathname, ctxt) {
-  logger.debug(`pathname to derive upstream URI : ${pathname}`)
-  let upstreamURI = "/";
+  logger.debug(`pathname to derive upstream URI : ${pathname}`);
+  let upstreamURI = '/';
   const txtArr = pathname.split('/');
-  let i =4;
-  if(ctxt === '/kubesd') {
-    i=2;
+  let i = 4;
+  if (ctxt === '/kubesd') {
+    i = 2;
   }
-  if(!pathname.startsWith(ctxt)) {
-    i++;
+  if (!pathname.startsWith(ctxt)) {
+    i += 1;
   }
-  for(; i<txtArr.length; i++) {
+  for (; i < txtArr.length; i += 1) {
     let txtToAppend = txtArr[i];
-    if (i == txtArr.length - 1) {
-      if(txtToAppend.lastIndexOf('?') > 0) {
+    if (i === txtArr.length - 1) {
+      if (txtToAppend.lastIndexOf('?') > 0) {
         txtToAppend = txtArr[i].slice(0, txtArr[i].indexOf('?'));
       }
-      upstreamURI = upstreamURI + txtToAppend;
+      upstreamURI += txtToAppend;
     } else {
-      upstreamURI = upstreamURI + txtToAppend + '/';
+      upstreamURI = `${upstreamURI + txtToAppend}/`;
     }
   }
   return upstreamURI;

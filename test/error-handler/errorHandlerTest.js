@@ -16,8 +16,8 @@ const errorHandler = require('../../error-handler/errorHandler');
 
 const winston = require('winston');
 const { logConfig } = require('../../config/app-settings').winston;
-const logger = winston.createLogger(logConfig);
 
+const logger = winston.createLogger(logConfig);
 
 const chai = require('chai');
 const http = require('http');
@@ -32,20 +32,20 @@ describe('test error handler', () => {
   beforeEach(() => {
     req = {
       params: {},
-      body: {}
+      body: {},
     };
 
     res = {
       data: null,
       code: null,
-      status (status) {
+      status(status) {
         this.code = status;
         return this;
       },
-      send (payload) {
+      send(payload) {
         this.data = payload;
       },
-      headersSent: false
+      headersSent: false,
     };
   });
 
@@ -66,4 +66,4 @@ describe('test error handler', () => {
     chai.expect(next.called).to.be.true;
     done();
   });
-})
+});

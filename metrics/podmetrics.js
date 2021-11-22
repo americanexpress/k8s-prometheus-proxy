@@ -11,21 +11,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-const winston = require('winston');
-const { logConfig } = require('../config/app-settings').winston;
-const logger = winston.createLogger(logConfig);
-
-const k8sPods = require('../k8s/pods');
 const https = require('https');
 const http = require('http');
 const os = require('os');
 const url = require('url');
-const podLabels = require('../labels/podlabels.js');
-const podmetricsUtils = require('./podmetricsUtil.js');
+
+const winston = require('winston');
+
+const k8sPods = require('../k8s/pods');
+const podLabels = require('../labels/podlabels');
+const podmetricsUtils = require('./podmetricsUtil');
 const whitelistUtil = require('./whitelistUtil');
 
+const { logConfig } = require('../config/app-settings').winston;
+
+const logger = winston.createLogger(logConfig);
+
 function finishWithError(res) {
-  res.writeHead(500, {'Content-Type': 'text/plain'});
+  res.writeHead(500, { 'Content-Type': 'text/plain' });
   res.write('#Unable to collect data.');
   res.end();
 }
@@ -34,11 +37,10 @@ function finishWithSuccess(res) {
   res.end();
 }
 
-
 function finishProcessing(noOfPods, completedRequests, successCount, errorCount, res) {
-  logger.debug(`noOfPods ${noOfPods}, completedRequests ${completedRequests}, successCount ${successCount}, errorCount ${errorCount}`)
-  if(completedRequests == noOfPods) {
-    if(successCount > 0 && successCount <= completedRequests) {
+  logger.debug(`noOfPods ${noOfPods}, completedRequests ${completedRequests}, successCount ${successCount}, errorCount ${errorCount}`);
+  if (completedRequests === noOfPods) {
+    if (successCount > 0 && successCount <= completedRequests) {
       finishWithSuccess(res);
     } else {
       finishWithError(res);
@@ -49,7 +51,6 @@ function finishProcessing(noOfPods, completedRequests, successCount, errorCount,
 }
 
 function retrieveMetrics(podIPMap, req, res, upstreamURI) {
-  const metricsResponses = [];
   let completedRequests = 0;
   let errorCount = 0;
   let successCount = 0;
@@ -57,17 +58,13 @@ function retrieveMetrics(podIPMap, req, res, upstreamURI) {
   logger.debug('pod ip map : ', podIPMap);
   logger.debug('request params :', req.params);
 
-
   if (podIPMap.size > 0) {
-    logger.debug("url " + req.url)
+    logger.debug(`url ${req.url}`);
     logger.debug(`upstreamURI : ${upstreamURI}`);
     const podReqHeaders = {};
-    for(headerKey in req.headers) {
-      if(headerKey.toUpperCase() === 'AUTHORIZATION') {
-        podReqHeaders[headerKey] = req.headers[headerKey];
-      }
+    if (req.headers.authorization) {
+      podReqHeaders.authorization = req.headers.authorization;
     }
-    delete podReqHeaders.host;
     podIPMap.forEach((value, key, map) => {
       const options = {
         hostname: value.podIP,
@@ -75,7 +72,7 @@ function retrieveMetrics(podIPMap, req, res, upstreamURI) {
         path: upstreamURI,
         method: 'GET',
         timeout: 15000,
-        headers : podReqHeaders,
+        headers: podReqHeaders,
       };
       logger.debug('http options used for request ', options);
       logger.debug(options);
@@ -83,24 +80,24 @@ function retrieveMetrics(podIPMap, req, res, upstreamURI) {
         options.insecure = true;
       }
 
-      const queryObj = (req.query.ssl === 'true') ? https : http;
+      const queryObj = req.query.ssl === 'true' ? https : http;
 
       const podMetricsRequest = queryObj.request(options, (response) => {
         let metricsBody = '';
 
         response.on('data', (data) => {
-            metricsBody += data;
+          metricsBody += data;
         });
 
         response.on('end', () => {
           logger.debug(`key :${key} value :${value} map :${map}`);
-          let respHost = podmetricsUtils.deriveRespHost(podMetricsRequest);
+          const respHost = podmetricsUtils.deriveRespHost(podMetricsRequest);
           logger.debug(`hostname on the response received from pod :${respHost}`);
           const pod = podIPMap.get(respHost);
-          if(response.statusCode === 200 && pod != null) {
+          if (response.statusCode === 200 && pod != null) {
             const labelStr = `podname="${pod.podName}",podip="${pod.podIP}"`;
             const metricsArray = metricsBody.toString().split(os.EOL);
-            let responseString = podLabels.metricsWithPodLabels(metricsArray,labelStr);
+            const responseString = podLabels.metricsWithPodLabels(metricsArray, labelStr);
             res.write(responseString);
             successCount += 1;
           } else {
@@ -151,15 +148,19 @@ function handleMetricsRoute(req, resp, k8sCACert, k8sToken) {
   const parsedUrl = url.parse(req.url);
   const upstreamURI = podmetricsUtils.deriveUpstreamURI(parsedUrl.pathname, '/mproxy');
   logger.debug(`upstreamURI : ${upstreamURI}`);
-  if(!whitelistUtil.isValidNamespaceName(req.params.upstreamNamespace)) {
-    logger.error(`invalid namespace ${req.params.upstreamNamespace}` );
+  if (!whitelistUtil.isValidNamespaceName(req.params.upstreamNamespace)) {
+    logger.error(`invalid namespace ${req.params.upstreamNamespace}`);
     finishWithError(resp);
-  } else if(!whitelistUtil.isWhitelistedPath(upstreamURI)) {
-    logger.error(`upstream URI ${upstreamURI} is not whitelisted` );
+  } else if (!whitelistUtil.isWhitelistedPath(upstreamURI)) {
+    logger.error(`upstream URI ${upstreamURI} is not whitelisted`);
     finishWithError(resp);
   } else {
-    const podsDataPromise = k8sPods.podData(req.params.upstreamNamespace, req.params.upstreamService,
-      k8sCACert, k8sToken);
+    const podsDataPromise = k8sPods.podData({
+      upstreamNamespace: req.params.upstreamNamespace,
+      upstreamService: req.params.upstreamService,
+      k8sCACert,
+      k8sToken,
+    });
     podsDataPromise.then((podsIPMap) => {
       retrieveMetrics(podsIPMap, req, resp, upstreamURI);
     }, (error) => {

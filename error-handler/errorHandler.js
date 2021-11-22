@@ -14,13 +14,15 @@
 
 const winston = require('winston');
 const { logConfig } = require('../config/app-settings').winston;
+
 const logger = winston.createLogger(logConfig);
 
+/* eslint-disable-next-line max-params -- express error handling function signature */
 module.exports = (err, req, res, next) => {
   if (res.headersSent) {
     return next(err);
   }
   logger.debug(`error in processing request ${req}`);
   logger.error(err.stack);
-  res.status(500).send(`Error in processing request`);
+  return res.status(500).send('Error in processing request');
 };

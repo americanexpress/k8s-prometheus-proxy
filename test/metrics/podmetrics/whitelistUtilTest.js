@@ -12,8 +12,8 @@
  * the License.
  */
 
-const whitelistUtil = require('../../../metrics/whitelistUtil.js');
 const chai = require('chai');
+const whitelistUtil = require('../../../metrics/whitelistUtil.js');
 
 describe('whitelist tests', () => {
   it('test namespace', (done) => {
@@ -30,4 +30,3 @@ describe('whitelist tests', () => {
     done();
   });
 });
-

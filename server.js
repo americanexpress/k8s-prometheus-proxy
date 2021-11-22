@@ -16,12 +16,11 @@ const os = require('os');
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
-const url = require('url');
-const querystring = require('querystring');
 const express = require('express');
 const apiMetrics = require('prometheus-api-metrics');
 const winston = require('winston');
 const { logConfig } = require('./config/app-settings').winston;
+
 const logger = winston.createLogger(logConfig);
 
 const app = express();
@@ -48,18 +47,18 @@ const metricsHttpPort = process.env.METRICS_HTTP_PORT || 5055;
 let k8sProxyServer;
 let appUrlPrefix = process.env.APP_URL_PREFIX;
 
-const defaultRouteHandler = function(req, res) {
+const defaultRouteHandler = function (req, res) {
   logger.debug(`Landing url...${process.env.name} ${packageJson.version} is running on ${os.hostname()} on http port (${httpPort})`);
-  res.json({ message: `kubernetes prometheus proxy` });
+  res.json({ message: 'kubernetes prometheus proxy' });
 };
 
-if(appUrlPrefix === undefined || appUrlPrefix === null) {
+if (appUrlPrefix === undefined || appUrlPrefix === null) {
   app.use('/', router);
 } else {
   appUrlPrefix = appUrlPrefix.trim();
-  app.use('/' + appUrlPrefix, router);
+  app.use(`/${appUrlPrefix}`, router);
   const defaultRouter = express.Router();
-  defaultRouter.get('/',defaultRouteHandler);
+  defaultRouter.get('/', defaultRouteHandler);
   app.use('/', defaultRouter);
 }
 
@@ -72,8 +71,8 @@ router.get('/mproxy/:upstreamNamespace/:upstreamService/*', (req, res) => {
   podMetrics.handleMetricsRoute(req, res, k8sCACert, k8sToken);
 });
 
-router.get("/kubesd/*", (req, res) => {
-  console.log('from server.js req url ' + req.url);
+router.get('/kubesd/*', (req, res) => {
+  console.log(`from server.js req url ${req.url}`);
   kubesdMetrics.handleMetricsRoute(req, res);
 });
 
@@ -87,19 +86,19 @@ logger.debug(certCAFile);
 logger.debug(certKeyPasswdFile);
 
 if (certkeyFile === undefined || certkeyFile === null) {
-  logger.debug(`creating http server`);
+  logger.debug('creating http server');
   k8sProxyServer = http.createServer(app);
   k8sProxyServer.listen(httpPort, () => {
     logger.debug(`http server is listening on ${httpPort}`);
   });
   logger.debug(`${process.env.name} ${packageJson.version} is running on ${os.hostname()} on http port ${httpPort}`);
 } else {
-  logger.debug(`creating https server`);
+  logger.debug('creating https server');
   const privateKey = fs.readFileSync(certkeyFile);
   const certificate = fs.readFileSync(certFile);
   const ca = fs.readFileSync(certCAFile);
   let pass;
-  if(certKeyPasswdFile !== undefined && certKeyPasswdFile !== null) {
+  if (certKeyPasswdFile !== undefined && certKeyPasswdFile !== null) {
     pass = fs.readFileSync(certKeyPasswdFile, 'ascii');
   }
 
