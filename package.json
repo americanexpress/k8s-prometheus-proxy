@@ -6,9 +6,7 @@
   "scripts": {
     "start": "name=kubernetes-metrics-proxy node server.js",
     "test": "KUBERNETES_SERVICE_HOST=localhost KUBERNETES_SERVICE_PORT=58443 K8S_BUILD_NAMESPACE=project1 TOKEN_FILE=./token K8S_CACERT=./cacert nyc --reporter=text mocha test --recursive --timeout 25000",
-    "coverage": "nyc ",
-    "posttest": "gulp build",
-    "build": "echo \"Build Success\"",
+    "build": "gulp build",
     "lint": "eslint --fix --ignore-path .gitignore --ext .js,.snap ."
   },
   "repository": {
