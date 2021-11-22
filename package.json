@@ -9,7 +9,7 @@
     "coverage": "nyc ",
     "posttest": "./node_modules/.bin/gulp build",
     "build": "echo \"Build Success\"",
-    "lint": "eslint --fix --ignore-path .gitignore --ext .js,.snap ."
+    "lint": "eslint --ignore-path .gitignore --ext .js,.snap ."
   },
   "repository": {
     "type": "git",
