@@ -11,32 +11,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+const url = require('url');
+const events = require('events');
 
+const chai = require('chai');
+const proxyquire = require('proxyquire');
+const httpMocks = require('node-mocks-http');
+const nock = require('nock');
 const winston = require('winston');
+
 const { logConfig } = require('../../../config/app-settings').winston;
 
 const logger = winston.createLogger(logConfig);
 
-const proxyquire = require('proxyquire');
-const url = require('url');
-const chai = require('chai');
-const fs = require('fs');
-const httpMocks = require('node-mocks-http');
-const nock = require('nock');
-const events = require('events');
-
-describe('kubesd metrics tests:', () => {
-  beforeEach(() => {
+describe('kubesd metrics tests:', function () {
+  beforeEach(function () {
     delete require.cache[require.resolve('../../../metrics/whitelistUtil')];
     process.env.CIDR_WHITELIST = '10.0.0.1/24';
     process.env.METRICS_PATH_WHITELIST = '/metrics';
   });
 
-  afterEach(() => {
+  afterEach(function () {
     nock.cleanAll();
   });
 
-  it('test pod metrics success', (done) => {
+  it('test pod metrics success', function (done) {
     const request = httpMocks.createRequest({
       method: 'GET',
       url: '/v1/kubesd/metrics',
@@ -53,7 +52,7 @@ describe('kubesd metrics tests:', () => {
 
     const httpProxyStub = {};
     const apiProxyStub = {};
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(targetObj);
       const parsedUrl = url.parse(targetObj.target);
       chai.expect(parsedUrl.hostname).to.equal('10.0.0.1');
@@ -62,7 +61,7 @@ describe('kubesd metrics tests:', () => {
       chai.expect(parsedUrl.pathname).to.equal('/metrics');
       done();
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
 
@@ -70,7 +69,7 @@ describe('kubesd metrics tests:', () => {
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
   });
 
-  it('test pod metrics success with no appurl prefix', (done) => {
+  it('test pod metrics success with no appurl prefix', function (done) {
     const request = httpMocks.createRequest({
       method: 'GET',
       url: '/kubesd/metrics',
@@ -88,7 +87,7 @@ describe('kubesd metrics tests:', () => {
     const httpProxyStub = {};
     const apiProxyStub = {};
     let reqCompleted = 0;
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(targetObj);
       const parsedUrl = url.parse(targetObj.target);
       chai.expect(parsedUrl.hostname).to.equal('10.0.0.1');
@@ -100,7 +99,7 @@ describe('kubesd metrics tests:', () => {
         done();
       }
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
 
@@ -120,7 +119,7 @@ describe('kubesd metrics tests:', () => {
     kubesdmetrics.handleMetricsRoute(request, response, '  ');
   });
 
-  it('test pod metrics default target_scheme', (done) => {
+  it('test pod metrics default target_scheme', function (done) {
     const request = httpMocks.createRequest({
       method: 'GET',
       url: '/v1/kubesd/metrics',
@@ -136,7 +135,7 @@ describe('kubesd metrics tests:', () => {
 
     const httpProxyStub = {};
     const apiProxyStub = {};
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(targetObj);
       const parsedUrl = url.parse(targetObj.target);
       chai.expect(parsedUrl.hostname).to.equal('10.0.0.1');
@@ -145,7 +144,7 @@ describe('kubesd metrics tests:', () => {
       chai.expect(parsedUrl.pathname).to.equal('/metrics');
       done();
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
 
@@ -153,7 +152,7 @@ describe('kubesd metrics tests:', () => {
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
   });
 
-  it('test pod metrics error', (done) => {
+  it('test pod metrics error', function (done) {
     const request = httpMocks.createRequest({
       method: 'GET',
       url: '/v1/kubesd/metrics',
@@ -179,7 +178,7 @@ describe('kubesd metrics tests:', () => {
       chai.expect(parsedUrl.pathname).to.equal('/metrics');
       errorCallback(new Error('socket error'));
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
     response.on('end', () => {

@@ -11,31 +11,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-const winston = require('winston');
-const { logConfig } = require('../../config/app-settings').winston;
-
-const logger = winston.createLogger(logConfig);
-const chai = require('chai');
 const fs = require('fs');
-const nock = require('nock');
-const sinon = require('sinon');
 const { EventEmitter } = require('events');
 const https = require('https');
 
-describe('k8s pods api tests:', () => {
-  process.env.CIDR_WHITELIST = '10.0.0.0/8';
-  process.env.METRICS_PATH_WHITELIST = '/metrics';
-  const pods = require('../../k8s/pods.js');
-  beforeEach(() => {
+const chai = require('chai');
+const nock = require('nock');
+const sinon = require('sinon');
+const winston = require('winston');
 
+const { logConfig } = require('../../config/app-settings').winston;
+
+const logger = winston.createLogger(logConfig);
+
+describe('k8s pods api tests subnet 10.0.0.0/8', function () {
+  let pods;
+
+  before(function () {
+    process.env.CIDR_WHITELIST = '10.0.0.0/8';
+    process.env.METRICS_PATH_WHITELIST = '/metrics';
+    pods = require('../../k8s/pods');
   });
 
-  afterEach(() => {
+  afterEach(function () {
     nock.cleanAll();
   });
 
-  it('test get pods', (done) => {
+  // FIXME: rename this to the specification the unit is expected to follow
+  it('test 1 get pods', function (done) {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
       .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
@@ -58,7 +61,8 @@ describe('k8s pods api tests:', () => {
     });
   });
 
-  it('test get no pod', (done) => {
+  // FIXME: rename this to the specification the unit is expected to follow
+  it('test 2 get pods', function (done) {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
       .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
@@ -78,7 +82,8 @@ describe('k8s pods api tests:', () => {
     });
   });
 
-  it('test empty response', (done) => {
+  // FIXME: rename this to the specification the unit is expected to follow
+  it('test 3 get pods', function (done) {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
       .get('/api/v1/namespaces/project1/pods')
       .reply(200, '{}');
@@ -89,14 +94,14 @@ describe('k8s pods api tests:', () => {
       k8sCACert: process.env.OPENSHIFT_CACERT,
       k8sToken: 'SOMETOKEN',
     });
-    podsPromise.then((podsIPMap) => {
-      done(new Error('should not succeed'));
-    }, (error) => {
-      done();
-    });
+    podsPromise.then(
+      () => done(new Error('should not succeed')),
+      () => done()
+    );
   });
 
-  it('test kubemaster unauthorized', (done) => {
+  // FIXME: rename this to the specification the unit is expected to follow
+  it('test 4 get pods', function (done) {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
       .get('/api/v1/namespaces/project1/pods')
       .reply(401, 'Unauthorized');
@@ -114,7 +119,8 @@ describe('k8s pods api tests:', () => {
     });
   });
 
-  it('test kubemaster connection error', (done) => {
+  // FIXME: rename this to the specification the unit is expected to follow
+  it('test 5 get pods', function (done) {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
       .get('/api/v1/namespaces/project1/pods')
       .delayConnection(10000)
@@ -133,7 +139,8 @@ describe('k8s pods api tests:', () => {
     });
   });
 
-  it('test error event', (done) => {
+  // FIXME: rename this to the specification the unit is expected to follow
+  it('test 6 get pods', function (done) {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
       .get('/api/v1/namespaces/project1/pods')
       .replyWithError({
@@ -154,11 +161,13 @@ describe('k8s pods api tests:', () => {
     });
   });
 
-  it('test error event on request  ', (done) => {
-    EventEmitter.prototype.setTimeout = function (timeo) {};
-    EventEmitter.prototype.end = function () {};
-    EventEmitter.prototype.destroy = function () {};
-    const emitter = new EventEmitter();
+  // FIXME: rename this to the specification the unit is expected to follow
+  it('test 7 get pods', function (done) {
+    const emitter = Object.assign(new EventEmitter(), {
+      setTimeout: () => {},
+      end: () => {},
+      destroy: () => {},
+    });
     const httpsRequestMock = sinon.stub(https, 'request').returns(emitter);
 
     const podsPromise = pods.podData({
@@ -177,11 +186,13 @@ describe('k8s pods api tests:', () => {
     });
   });
 
-  it('test timeout event on request  ', (done) => {
-    EventEmitter.prototype.setTimeout = function (timeo) {};
-    EventEmitter.prototype.end = function () {};
-    EventEmitter.prototype.destroy = function () {};
-    const emitter = new EventEmitter();
+  // FIXME: rename this to the specification the unit is expected to follow
+  it('test 8 get pods', function (done) {
+    const emitter = Object.assign(new EventEmitter(), {
+      setTimeout: () => {},
+      end: () => {},
+      destroy: () => {},
+    });
     const httpsRequestMock = sinon.stub(https, 'request').returns(emitter);
     const podsPromise = pods.podData({
       upstreamNamespace: 'project1',
@@ -200,12 +211,18 @@ describe('k8s pods api tests:', () => {
     });
   });
 
-  it('test error event on response  ', (done) => {
-    EventEmitter.prototype.setTimeout = function (timeo) {};
-    EventEmitter.prototype.end = function () {};
-    EventEmitter.prototype.destroy = function () {};
-    emitterReq = new EventEmitter();
-    emitterResp = new EventEmitter();
+  // FIXME: rename this to the specification the unit is expected to follow
+  it('test 9 get pods', function (done) {
+    const emitterReq = Object.assign(new EventEmitter(), {
+      setTimeout: () => {},
+      end: () => {},
+      destroy: () => {},
+    });
+    const emitterResp = Object.assign(new EventEmitter(), {
+      setTimeout: () => {},
+      end: () => {},
+      destroy: () => {},
+    });
     const httpsRequestMock = sinon.stub(https, 'request').returns(emitterReq);
     const podsPromise = pods.podData({
       upstreamNamespace: 'project1',
@@ -225,20 +242,20 @@ describe('k8s pods api tests:', () => {
   });
 });
 
-describe('k8s pods whitelisting test:', () => {
-  beforeEach(() => {
+describe('k8s pods api tests:', function () {
+  beforeEach(function () {
     delete require.cache[require.resolve('../../metrics/whitelistUtil')];
     delete require.cache[require.resolve('../../k8s/pods')];
   });
 
-  afterEach(() => {
+  afterEach(function () {
     nock.cleanAll();
   });
 
-  it('test get pods one whitelisted ip', (done) => {
+  it('test get pods subnet 10.0.0.1/24', function (done) {
     process.env.CIDR_WHITELIST = '10.0.0.1/24';
     process.env.METRICS_PATH_WHITELIST = '/metrics';
-    const pods = require('../../k8s/pods.js');
+    const pods = require('../../k8s/pods');
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
       .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());
@@ -260,10 +277,10 @@ describe('k8s pods whitelisting test:', () => {
     });
   });
 
-  it('test get pods no whitelisted ip', (done) => {
+  it('test get pods subnet 192.168.0.0/24', function (done) {
     process.env.CIDR_WHITELIST = '192.168.0.0/24';
     process.env.METRICS_PATH_WHITELIST = '/metrics';
-    const pods = require('../../k8s/pods.js');
+    const pods = require('../../k8s/pods');
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
       .get('/api/v1/namespaces/project1/pods')
       .reply(200, fs.readFileSync('test/mockResponses/podsResponse.txt').toString());

@@ -11,29 +11,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+const events = require('events');
+const url = require('url');
 
+const chai = require('chai');
+const proxyquire = require('proxyquire');
+const httpMocks = require('node-mocks-http');
+const nock = require('nock');
 const winston = require('winston');
+
 const { logConfig } = require('../../../config/app-settings').winston;
 
 const logger = winston.createLogger(logConfig);
 
-const proxyquire = require('proxyquire');
-const url = require('url');
-const chai = require('chai');
-const fs = require('fs');
-const httpMocks = require('node-mocks-http');
-const nock = require('nock');
-const events = require('events');
-
-describe('kubesd metrics test whitelisting metrics path', () => {
-  beforeEach(() => {
+describe('kubesd metrics test whitelisting metrics path', function () {
+  beforeEach(function () {
     delete require.cache[require.resolve('../../../metrics/whitelistUtil')];
   });
-  afterEach(() => {
+  afterEach(function () {
     nock.cleanAll();
   });
 
-  it('test whitelisting path', (done) => {
+  it('test whitelisting path', function (done) {
     process.env.CIDR_WHITELIST = '10.0.0.1/24';
     process.env.METRICS_PATH_WHITELIST = '.*metrics.*';
     const request = httpMocks.createRequest({
@@ -52,7 +51,7 @@ describe('kubesd metrics test whitelisting metrics path', () => {
 
     const httpProxyStub = {};
     const apiProxyStub = {};
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(req.url);
       chai.expect(req.method).to.equal('GET');
       chai.expect(req.url).to.equal('/v1/kubesd/metrics');
@@ -68,7 +67,7 @@ describe('kubesd metrics test whitelisting metrics path', () => {
       chai.expect(expectedTarget).to.equal(targetObj.target);
       done();
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
     response.on('end', () => {
@@ -80,7 +79,7 @@ describe('kubesd metrics test whitelisting metrics path', () => {
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
   });
 
-  it('test whitelisting no env variable', (done) => {
+  it('test whitelisting no env variable', function (done) {
     process.env.CIDR_WHITELIST = '10.0.0.1/24';
     delete process.env.METRICS_PATH_WHITELIST;
     const request = httpMocks.createRequest({
@@ -99,11 +98,11 @@ describe('kubesd metrics test whitelisting metrics path', () => {
 
     const httpProxyStub = {};
     const apiProxyStub = {};
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(targetObj);
       done(new Error('should not be called'));
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
     response.on('end', () => {
@@ -118,9 +117,9 @@ describe('kubesd metrics test whitelisting metrics path', () => {
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
   });
 
-  it('test whitelisting path not part of multiple paths', (done) => {
+  it('test whitelisting path not part of multiple paths', function (done) {
     process.env.CIDR_WHITELIST = '10.0.0.1/24';
-    process.env.METRICS_PATH_WHITELIST = '.*testmetrics$,\/test\/another\/path$,.*\/metrics1$';
+    process.env.METRICS_PATH_WHITELIST = '.*testmetrics$,\\/test\\/another\\/path$,.*\\/metrics1$';
     const request = httpMocks.createRequest({
       method: 'GET',
       url: '/v1/kubesd/metrics',
@@ -137,11 +136,11 @@ describe('kubesd metrics test whitelisting metrics path', () => {
 
     const httpProxyStub = {};
     const apiProxyStub = {};
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(targetObj);
       done(new Error('should not be called'));
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
     response.on('end', () => {
@@ -156,9 +155,9 @@ describe('kubesd metrics test whitelisting metrics path', () => {
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
   });
 
-  it('test whitelisting multiple paths', (done) => {
+  it('test whitelisting multiple paths', function (done) {
     process.env.CIDR_WHITELIST = '10.0.0.1/24,10.1.1.0/26';
-    process.env.METRICS_PATH_WHITELIST = '(?:\/)metrics$,(?:\/)somepath\/prom$,(?:\/)another\/path\/readmetrics$';
+    process.env.METRICS_PATH_WHITELIST = '(?:\\/)metrics$,(?:\\/)somepath\\/prom$,(?:\\/)another\\/path\\/readmetrics$';
     let request = httpMocks.createRequest({
       method: 'GET',
       url: '/v1/kubesd/another/prom/metrics',
@@ -176,7 +175,7 @@ describe('kubesd metrics test whitelisting metrics path', () => {
     const httpProxyStub = {};
     const apiProxyStub = {};
     let numOfRequests = 0;
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(targetObj.target);
       chai.expect(targetObj.target.includes('https://10.0.0.5:3005/')).to.be.true;
       chai.expect(['https://10.0.0.5:3005/another/prom/metrics', 'https://10.0.0.5:3005/myctxt/another/path/readmetrics', 'https://10.0.0.5:3005/somepath/prom'])
@@ -186,7 +185,7 @@ describe('kubesd metrics test whitelisting metrics path', () => {
         done();
       }
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
     response.on('end', () => {
@@ -227,18 +226,18 @@ describe('kubesd metrics test whitelisting metrics path', () => {
   });
 });
 
-describe('kubesd metrics test whitelisting IPs', () => {
-  beforeEach(() => {
+describe('kubesd metrics test whitelisting IPs', function () {
+  beforeEach(function () {
     delete require.cache[require.resolve('../../../metrics/whitelistUtil')];
   });
 
-  afterEach(() => {
+  afterEach(function () {
     nock.cleanAll();
   });
 
-  it('test whitelisting', (done) => {
+  it('test whitelisting', function (done) {
     process.env.CIDR_WHITELIST = '10.0.0.1/24';
-    process.env.METRICS_PATH_WHITELIST = '(?:\/)metrics$';
+    process.env.METRICS_PATH_WHITELIST = '(?:\\/)metrics$';
     const request = httpMocks.createRequest({
       method: 'GET',
       url: '/v1/kubesd/metrics',
@@ -255,7 +254,7 @@ describe('kubesd metrics test whitelisting IPs', () => {
 
     const httpProxyStub = {};
     const apiProxyStub = {};
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(req.url);
       chai.expect(req.method).to.equal('GET');
       chai.expect(req.url).to.equal('/v1/kubesd/metrics');
@@ -271,7 +270,7 @@ describe('kubesd metrics test whitelisting IPs', () => {
       chai.expect(expectedTarget).to.equal(targetObj.target);
       done();
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
     response.on('end', () => {
@@ -286,7 +285,7 @@ describe('kubesd metrics test whitelisting IPs', () => {
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
   });
 
-  it('test whitelisting no env variable', (done) => {
+  it('test whitelisting no env variable', function (done) {
     delete process.env.CIDR_WHITELIST;
     const request = httpMocks.createRequest({
       method: 'GET',
@@ -304,11 +303,11 @@ describe('kubesd metrics test whitelisting IPs', () => {
 
     const httpProxyStub = {};
     const apiProxyStub = {};
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(targetObj);
       done(new Error('should not be called'));
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
     response.on('end', () => {
@@ -323,9 +322,9 @@ describe('kubesd metrics test whitelisting IPs', () => {
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
   });
 
-  it('test whitelisting multiple ips', (done) => {
+  it('test whitelisting multiple ips', function (done) {
     process.env.CIDR_WHITELIST = '10.0.0.1/24,10.1.1.0/26';
-    process.env.METRICS_PATH_WHITELIST = '(?:\/)metrics$,\/some\/metrics$,\/other\/metricspath$';
+    process.env.METRICS_PATH_WHITELIST = '(?:\\/)metrics$,\\/some\\/metrics$,\\/other\\/metricspath$';
     let request = httpMocks.createRequest({
       method: 'GET',
       url: '/v1/kubesd/metrics',
@@ -343,7 +342,7 @@ describe('kubesd metrics test whitelisting IPs', () => {
     const httpProxyStub = {};
     const apiProxyStub = {};
     let numOfRequests = 0;
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(targetObj);
       logger.debug(targetObj.target);
       chai.expect(['https://10.1.1.60:3005/metrics', 'https://10.1.1.58:3005/some/metrics', 'https://10.0.0.5:3005/other/metricspath'])
@@ -353,7 +352,7 @@ describe('kubesd metrics test whitelisting IPs', () => {
         done();
       }
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
     response.on('end', () => {
@@ -387,7 +386,7 @@ describe('kubesd metrics test whitelisting IPs', () => {
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
   });
 
-  it('test whitelisting ip not part of multiple ips', (done) => {
+  it('test whitelisting ip not part of multiple ips', function (done) {
     process.env.CIDR_WHITELIST = '10.0.0.1/24,10.1.1.0/26';
     process.env.METRICS_PATH_WHITELIST = 'metrics$';
     const request = httpMocks.createRequest({
@@ -406,11 +405,11 @@ describe('kubesd metrics test whitelisting IPs', () => {
 
     const httpProxyStub = {};
     const apiProxyStub = {};
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(targetObj);
       done(new Error('should not be called'));
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
     response.on('end', () => {
@@ -425,9 +424,9 @@ describe('kubesd metrics test whitelisting IPs', () => {
     kubesdmetrics.handleMetricsRoute(request, response, 'v1');
   });
 
-  it('test whitelisting multiple ip incorrect whitelist', (done) => {
+  it('test whitelisting multiple ip incorrect whitelist', function (done) {
     process.env.CIDR_WHITELIST = 'sometest,ourtest.nonexisting.domain';
-    process.env.METRICS_PATH_WHITELIST = '\/metrics$';
+    process.env.METRICS_PATH_WHITELIST = '\\/metrics$';
     const request = httpMocks.createRequest({
       method: 'GET',
       url: '/v1/kubesd/metrics',
@@ -444,11 +443,11 @@ describe('kubesd metrics test whitelisting IPs', () => {
 
     const httpProxyStub = {};
     const apiProxyStub = {};
-    apiProxyStub.web = function (req, res, targetObj, errorCallback) {
+    apiProxyStub.web = function (req, res, targetObj /* , errorCallback */) {
       logger.debug(targetObj);
       done(new Error('should not be called'));
     };
-    httpProxyStub.createProxyServer = function (obj) {
+    httpProxyStub.createProxyServer = function () {
       return apiProxyStub;
     };
     response.on('end', () => {

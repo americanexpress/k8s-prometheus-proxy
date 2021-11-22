@@ -13,10 +13,10 @@
  */
 
 const chai = require('chai');
-const whitelistUtil = require('../../../metrics/whitelistUtil.js');
+const whitelistUtil = require('../../../metrics/whitelistUtil');
 
-describe('whitelist tests', () => {
-  it('test namespace', (done) => {
+describe('whitelist tests', function () {
+  it('test namespace', function () {
     chai.expect(whitelistUtil.isValidNamespaceName('01010')).to.be.true;
     chai.expect(whitelistUtil.isValidNamespaceName('abc')).to.be.true;
     chai.expect(whitelistUtil.isValidNamespaceName('ABC')).to.be.false;
@@ -27,6 +27,5 @@ describe('whitelist tests', () => {
     chai.expect(whitelistUtil.isValidNamespaceName('abc-aa')).to.be.true;
     chai.expect(whitelistUtil.isValidNamespaceName('abcdefghijklmnopqrstuvwxyz1234567890-abcdefghijklmnopqrstuvwxyz')).to.be.true;
     chai.expect(whitelistUtil.isValidNamespaceName('abcdefghijklmnopqrstuvwxyz1234567890-abcdefghijklmnopqrstuvwxyz-aa')).to.be.false;
-    done();
   });
 });

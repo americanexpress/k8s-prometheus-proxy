@@ -12,34 +12,34 @@
  * the License.
  */
 
-const chai = require('chai');
 const http = require('http');
 const https = require('https');
-const sinon = require('sinon');
 const fs = require('fs');
+
+const chai = require('chai');
+const sinon = require('sinon');
 const winston = require('winston');
+
+const podMetrics = require('../metrics/podmetrics');
+const kubesdMetrics = require('../metrics/kubesdmetrics');
 const { logConfig } = require('../config/app-settings').winston;
 
 const logger = winston.createLogger(logConfig);
 
-const podMetrics = require('../metrics/podmetrics');
-const kubesdMetrics = require('../metrics/kubesdmetrics');
-const tokenUtil = require('../k8s/tokenUtil');
-
-describe('test http server', () => {
+describe('test http server', function () {
   let server;
-  beforeEach(() => {
-    delete require.cache[require.resolve('../server.js')];
+  beforeEach(function () {
+    delete require.cache[require.resolve('../server')];
   });
 
-  afterEach(() => {
+  afterEach(function () {
     server.k8sProxyServer.close();
     server.metricsHttpServer.close();
     sinon.restore();
   });
 
-  it('test http server starts', (done) => {
-    server = require('../server.js');
+  it('test http server starts', function (done) {
+    server = require('../server');
     const options = {
       hostname: 'localhost',
       port: 5050,
@@ -71,8 +71,8 @@ describe('test http server', () => {
     req.end();
   });
 
-  it('test mproxy endpoint', (done) => {
-    server = require('../server.js');
+  it('test mproxy endpoint', function (done) {
+    server = require('../server');
     const options = {
       hostname: 'localhost',
       port: 5050,
@@ -91,7 +91,7 @@ describe('test http server', () => {
         chai.expect(podMetricsStub.called).to.be.true;
         done();
       });
-      response.on('data', (data) => {
+      response.on('data', () => {
         logger.debug('data event received for response');
       });
     }).end();
@@ -101,8 +101,8 @@ describe('test http server', () => {
     });
   });
 
-  it('test kubesd endpoint', (done) => {
-    server = require('../server.js');
+  it('test kubesd endpoint', function (done) {
+    server = require('../server');
     const options = {
       hostname: 'localhost',
       port: 5050,
@@ -121,7 +121,7 @@ describe('test http server', () => {
         chai.expect(podMetricsStub.called).to.be.true;
         done();
       });
-      response.on('data', (data) => {
+      response.on('data', () => {
         logger.debug('data event received for response');
       });
     }).end();
@@ -132,22 +132,22 @@ describe('test http server', () => {
   });
 });
 
-describe('test with app url prefix', () => {
+describe('test with app url prefix', function () {
   let server;
-  beforeEach(() => {
-    delete require.cache[require.resolve('../server.js')];
+  beforeEach(function () {
+    delete require.cache[require.resolve('../server')];
     process.env.APP_URL_PREFIX = 'v1';
   });
 
-  afterEach(() => {
+  afterEach(function () {
     delete process.env.APP_URL_PREFIX;
     server.k8sProxyServer.close();
     server.metricsHttpServer.close();
     sinon.restore();
   });
 
-  it('test http server starts', (done) => {
-    server = require('../server.js');
+  it('test http server starts', function (done) {
+    server = require('../server');
     const options = {
       hostname: 'localhost',
       port: 5050,
@@ -179,8 +179,8 @@ describe('test with app url prefix', () => {
     req.end();
   });
 
-  it('test mproxy endpoint', (done) => {
-    server = require('../server.js');
+  it('test mproxy endpoint', function (done) {
+    server = require('../server');
     const options = {
       hostname: 'localhost',
       port: 5050,
@@ -199,7 +199,7 @@ describe('test with app url prefix', () => {
         chai.expect(podMetricsStub.called).to.be.true;
         done();
       });
-      response.on('data', (data) => {
+      response.on('data', () => {
         logger.debug('data event received for response');
       });
     }).end();
@@ -209,8 +209,8 @@ describe('test with app url prefix', () => {
     });
   });
 
-  it('test kubesd endpoint', (done) => {
-    server = require('../server.js');
+  it('test kubesd endpoint', function (done) {
+    server = require('../server');
     const options = {
       hostname: 'localhost',
       port: 5050,
@@ -229,7 +229,7 @@ describe('test with app url prefix', () => {
         chai.expect(podMetricsStub.called).to.be.true;
         done();
       });
-      response.on('data', (data) => {
+      response.on('data', () => {
         logger.debug('data event received for response');
       });
     }).end();
@@ -240,22 +240,22 @@ describe('test with app url prefix', () => {
   });
 });
 
-describe('test https server', () => {
+describe('test https server', function () {
   let server;
-  beforeEach(() => {
-    delete require.cache[require.resolve('../server.js')];
+  beforeEach(function () {
+    delete require.cache[require.resolve('../server')];
   });
 
-  afterEach(() => {
+  afterEach(function () {
     server.k8sProxyServer.close();
     server.metricsHttpServer.close();
     sinon.restore();
   });
 
-  beforeEach(() => {
+  beforeEach(function () {
   });
 
-  afterEach(() => {
+  afterEach(function () {
     delete process.env.CERT_KEY_FILE;
     delete process.env.CERT_KEY_PASSWD_FILE;
     delete process.env.CERT_FILE;
@@ -263,12 +263,12 @@ describe('test https server', () => {
     sinon.restore();
   });
 
-  it('test https server starts', (done) => {
+  it('test https server starts', function (done) {
     process.env.CERT_KEY_FILE = 'test/certs/testserver.key';
     process.env.CERT_FILE = 'test/certs/testserver.pem';
     process.env.CERT_CA_FILE = 'test/certs/myCA.pem';
 
-    server = require('../server.js');
+    server = require('../server');
     const options = {
       hostname: 'localhost',
       port: 5053,
@@ -303,13 +303,13 @@ describe('test https server', () => {
     req.end();
   });
 
-  it('test https server starts with encrypted key', (done) => {
+  it('test https server starts with encrypted key', function (done) {
     process.env.CERT_KEY_FILE = 'test/certs/testserver_encrypted.key';
     process.env.CERT_KEY_PASSWD_FILE = 'test/certs/testserver_encrypted.passwd';
     process.env.CERT_FILE = 'test/certs/testserver.pem';
     process.env.CERT_CA_FILE = 'test/certs/myCA.pem';
 
-    server = require('../server.js');
+    server = require('../server');
     const options = {
       hostname: 'localhost',
       port: 5053,
@@ -344,19 +344,19 @@ describe('test https server', () => {
   });
 });
 
-describe('test for k8 token env variables', () => {
+describe('test for k8 token env variables', function () {
   let server;
-  beforeEach(() => {
-    delete require.cache[require.resolve('../server.js')];
+  beforeEach(function () {
+    delete require.cache[require.resolve('../server')];
   });
 
-  afterEach(() => {
+  afterEach(function () {
     server.k8sProxyServer.close();
     server.metricsHttpServer.close();
     sinon.restore();
   });
 
-  it('test mproxy endpoint', (done) => {
+  it('test mproxy endpoint', function (done) {
     delete process.env.TOKEN_FILE;
     delete process.env.K8S_CACERT;
     const podMetricsStub = sinon.stub(podMetrics, 'handleMetricsRoute');
@@ -365,11 +365,14 @@ describe('test for k8 token env variables', () => {
       resp.end();
     });
 
-    const fsStub = sinon.stub(fs, 'readFileSync').withArgs('/var/run/secrets/kubernetes.io/serviceaccount/token').callsFake((arg) => Buffer.from('K8S_GLOBAL_TOKEN=mytoken11')).withArgs('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
-      .callsFake((arg) => Buffer.from('cacert'));
+    sinon.stub(fs, 'readFileSync')
+      .withArgs('/var/run/secrets/kubernetes.io/serviceaccount/token')
+      .callsFake(() => Buffer.from('K8S_GLOBAL_TOKEN=mytoken11'))
+      .withArgs('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
+      .callsFake(() => Buffer.from('cacert'));
     fs.readFileSync.callThrough();
 
-    server = require('../server.js');
+    server = require('../server');
     const options = {
       hostname: 'localhost',
       port: 5050,

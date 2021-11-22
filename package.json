@@ -9,7 +9,7 @@
     "coverage": "nyc ",
     "posttest": "./node_modules/.bin/gulp build",
     "build": "echo \"Build Success\"",
-    "lint": "eslint --ignore-path .gitignore --ext .js,.snap ."
+    "lint": "eslint --ignore-path .gitignore ."
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
     "chai-http": "^2.0.1",
     "eslint": "^7.32.0",
     "eslint-config-amex": "^13.1.0",
+    "eslint-plugin-mocha": "^9.0.0",
     "mocha": "^2.4.5",
     "mock-fs": "^4.10.0",
     "nock": "^9.2.5",

@@ -13,11 +13,11 @@
  */
 
 const chai = require('chai');
-const http = require('http');
-const podmetricsUtils = require('../../../metrics/podmetricsUtil.js');
 
-describe('upstream uri test', () => {
-  it('test path', (done) => {
+const podmetricsUtils = require('../../../metrics/podmetricsUtil');
+
+describe('upstream uri test', function () {
+  it('test path', function (done) {
     chai.expect(podmetricsUtils.deriveUpstreamURI('/v1/mproxy/prj/serv/metrics', '/mproxy')).to.be.equal('/metrics');
     chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/metrics', '/mproxy')).to.be.equal('/metrics');
     chai.expect(podmetricsUtils.deriveUpstreamURI('/mproxy/prj/serv/metrics?some=thing&ssl=true', '/mproxy')).to.be.equal('/metrics');
@@ -27,7 +27,7 @@ describe('upstream uri test', () => {
   });
 });
 
-describe('derive response host test', () => {
+describe('derive response host test', function () {
   const Request = {
     host: null,
     init(remoteAddress, host) {
@@ -38,11 +38,11 @@ describe('derive response host test', () => {
     socket: {
       remoteAddress: '',
     },
-    getHeader(h) {
+    getHeader() {
       return this.host;
     },
   };
-  it('test resp host', (done) => {
+  it('test resp host', function (done) {
     chai.expect(podmetricsUtils.deriveRespHost(Object.create(Request).init('10.1.1.1', 'host'))).to.be.equal('10.1.1.1');
     chai.expect(podmetricsUtils.deriveRespHost(Object.create(Request).init(undefined, '10.1.1.2'))).to.be.equal('10.1.1.2');
     chai.expect(podmetricsUtils.deriveRespHost(Object.create(Request).init('10.1.1.1:443', 'host'))).to.be.equal('10.1.1.1');

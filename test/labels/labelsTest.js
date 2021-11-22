@@ -11,26 +11,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+const os = require('os');
 
+const chai = require('chai');
 const winston = require('winston');
+
 const { logConfig } = require('../../config/app-settings').winston;
+const app = require('../../labels/podlabels');
 
 const logger = winston.createLogger(logConfig);
 
-const app = require('../../labels/podlabels.js');
-const chai = require('chai');
-const os = require('os');
-
-describe('test labels', () => {
-  beforeEach(() => {
-
-  });
-
-  afterEach(() => {
-
-  });
-
-  it('test label addition', () => {
+describe('test labels', function () {
+  it('test label addition', function () {
     const metricsArray = [
       'nginx_http_connections{state="reading"} 0',
       'nginx_http_connections{state="waiting"} 21',
@@ -44,14 +36,14 @@ describe('test labels', () => {
     chai.expect(metricsResponse[2]).to.equal('nginx_metric_errors_total{podname="mypod1",podip="1.1.1.1"} 0');
   });
 
-  it('test empty array for label addition', () => {
+  it('test empty array for label addition', function () {
     const metricsArray = [];
     const metricsResponseStr = app.metricsWithPodLabels(metricsArray, 'podname="mypod1",podip="1.1.1.1"');
     logger.debug(metricsResponseStr);
     chai.expect(metricsResponseStr).to.equal('');
   });
 
-  it('test single metric', () => {
+  it('test single metric', function () {
     const metricsArray = [
       'nginx_http_connections{state="reading"} 0',
     ];
@@ -61,7 +53,7 @@ describe('test labels', () => {
     chai.expect(metricsResponse[0]).to.equal('nginx_http_connections{podname="mypod1",podip="1.1.1.1",state="reading"} 0');
   });
 
-  it('test only comment', () => {
+  it('test only comment', function () {
     const metricsArray = [
       '# my comment',
     ];
@@ -71,7 +63,7 @@ describe('test labels', () => {
     chai.expect(metricsResponse[0]).to.equal('# my comment');
   });
 
-  it('test comment and metric', () => {
+  it('test comment and metric', function () {
     const metricsArray = [
       '# my comment',
       'nginx_http_connections{state="reading"} 0',
@@ -87,7 +79,7 @@ describe('test labels', () => {
     chai.expect(metricsResponse[3]).to.equal('nginx_metric_errors_total{podname="mypod1",podip="1.1.1.1"} 0');
   });
 
-  it('test comment in between metrics', () => {
+  it('test comment in between metrics', function () {
     const metricsArray = [
       '# my comment',
       'nginx_http_connections{state="reading"} 0',
@@ -109,7 +101,7 @@ describe('test labels', () => {
     chai.expect(metricsResponse[6]).to.equal('nginx_metric_response_5xx_count{podname="mypod1",podip="1.1.1.1"} 0');
   });
 
-  it('test metrics with timestamp', () => {
+  it('test metrics with timestamp', function () {
     const metricsArray = [
       '# my comment',
       'http_requests_total{method="post",code="200"} 1027 1395066363010',
