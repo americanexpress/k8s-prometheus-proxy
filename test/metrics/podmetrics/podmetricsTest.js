@@ -344,11 +344,13 @@ describe('metrics/podmetrics', function () {
 
     it('test error event on response  ', function (done) {
       const emitterReq = Object.assign(new EventEmitter(), {
+        // https://nodejs.org/docs/latest-v10.x/api/http.html#http_request_settimeout_timeout_callback
         setTimeout: function mockSetTimeout() { return this; },
         end: () => {},
         destroy: () => {},
       });
       const emitterResp = Object.assign(new EventEmitter(), {
+        // https://nodejs.org/docs/latest-v10.x/api/http.html#http_response_settimeout_msecs_callback
         setTimeout: function mockSetTimeout() { return this; },
         end: () => {},
         destroy: () => {},
