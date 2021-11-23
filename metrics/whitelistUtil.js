@@ -15,41 +15,11 @@
 const ipRangeCheck = require('ip-range-check');
 const winston = require('winston');
 const { logConfig } = require('../config/app-settings').winston;
+
 const logger = winston.createLogger(logConfig);
-const metricsPathWhiteList = createRegexArray(process.env.METRICS_PATH_WHITELIST);
-const cidrWhitelist = createWhiteListArray(process.env.CIDR_WHITELIST);
-const validNamespaceRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
-
-function isWhitelistedPath(targetPath) {
-  let whiteListMatchFound = false;
-  for(let i=0; i<metricsPathWhiteList.length; i++) {
-    if(targetPath.match(metricsPathWhiteList[i])) {
-      logger.debug(`matched with regex ${metricsPathWhiteList[i]}`);
-      whiteListMatchFound = true;
-      break;
-    }
-  }
-  if(!whiteListMatchFound) {
-    logger.error(`target path is not part of whitelisted path ${metricsPathWhiteList}`);
-  }
-  return whiteListMatchFound;
-}
-
-function isWhiteListedIP(podIP) {
-  const isWhiteListed = ipRangeCheck(podIP,cidrWhitelist);
-  if(!isWhiteListed) {
-    logger.error(`ip ${podIP} is not part of whitelisted CIDR ${cidrWhitelist}`);
-  }
-  return isWhiteListed;
-}
-
-function isValidNamespaceName(projectName) {
-  return projectName.length <= 63 && validNamespaceRegex.test(projectName);
-}
 
 function createWhiteListArray(csvStr) {
-  if(csvStr)
-    return csvStr.split(',');
+  if (csvStr) return csvStr.split(',');
   return [];
 }
 
@@ -57,6 +27,38 @@ function createRegexArray(csvStr) {
   const re = [];
   createWhiteListArray(csvStr).forEach((s) => { re.push(new RegExp(s)); });
   return re;
+}
+
+const metricsPathWhiteList = createRegexArray(process.env.METRICS_PATH_WHITELIST);
+const cidrWhitelist = createWhiteListArray(process.env.CIDR_WHITELIST);
+
+function isWhitelistedPath(targetPath) {
+  let whiteListMatchFound = false;
+  for (const element of metricsPathWhiteList) {
+    if (targetPath.match(element)) {
+      logger.debug(`matched with regex ${element}`);
+      whiteListMatchFound = true;
+      break;
+    }
+  }
+  if (!whiteListMatchFound) {
+    logger.error(`target path is not part of whitelisted path ${metricsPathWhiteList}`);
+  }
+  return whiteListMatchFound;
+}
+
+function isWhiteListedIP(podIP) {
+  const isWhiteListed = ipRangeCheck(podIP, cidrWhitelist);
+  if (!isWhiteListed) {
+    logger.error(`ip ${podIP} is not part of whitelisted CIDR ${cidrWhitelist}`);
+  }
+  return isWhiteListed;
+}
+
+// eslint-disable-next-line unicorn/no-unsafe-regex -- the RegExp usage is guarded by a length check
+const validNamespaceRegex = /^[\da-z]([\da-z-]*[\da-z])?$/;
+function isValidNamespaceName(projectName) {
+  return projectName.length <= 63 && validNamespaceRegex.test(projectName);
 }
 
 module.exports = {

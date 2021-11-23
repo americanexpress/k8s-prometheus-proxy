@@ -14,25 +14,28 @@
 const https = require('https');
 const winston = require('winston');
 const { logConfig } = require('../config/app-settings').winston;
+
 const logger = winston.createLogger(logConfig);
 
 const whitelistUtil = require('../metrics/whitelistUtil');
 
-function getPodIPMap(upstreamNamespace, upstreamService, k8sCACert, k8sToken) {
-  const options = {
-    hostname: process.env.KUBERNETES_SERVICE_HOST,
-    port: process.env.KUBERNETES_SERVICE_PORT,
-    path: `/api/v1/namespaces/${upstreamNamespace}/pods`,
-    method: 'GET',
-    ca: k8sCACert,
-    timeout: 5000,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${k8sToken.toString().trim()}`,
-    },
-  };
+function getPodIPMap({
+  upstreamNamespace, upstreamService, k8sCACert, k8sToken,
+}) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: process.env.KUBERNETES_SERVICE_HOST,
+      port: process.env.KUBERNETES_SERVICE_PORT,
+      path: `/api/v1/namespaces/${upstreamNamespace}/pods`,
+      method: 'GET',
+      ca: k8sCACert,
+      timeout: 5000,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${k8sToken.toString().trim()}`,
+      },
+    };
 
-  return new Promise(((resolve, reject) => {
     const podIPReq = https.request(options, (response) => {
       const podIPMap = new Map();
       let podIPBody = '';
@@ -52,7 +55,7 @@ function getPodIPMap(upstreamNamespace, upstreamService, k8sCACert, k8sToken) {
               const podIPMapKey = entry.status.podIP;
               const podIPAddr = entry.status.podIP;
               const podUid = entry.metadata.uid;
-              if(whitelistUtil.isWhiteListedIP(podIPAddr)) {
+              if (whitelistUtil.isWhiteListedIP(podIPAddr)) {
                 if (podName.startsWith(upstreamService) && podState === 'Running') {
                   podIPMap.set(podIPMapKey, { podName, podIP: podIPAddr, uid: podUid });
                 }
@@ -82,9 +85,8 @@ function getPodIPMap(upstreamNamespace, upstreamService, k8sCACert, k8sToken) {
     });
     podIPReq.setTimeout(5000);
     podIPReq.end();
-  }));
+  });
 }
-
 
 module.exports = {
   podData: getPodIPMap,

@@ -11,21 +11,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+const fs = require('fs');
+
 const propertiesReader = require('properties-reader');
+
 function deriveToken(tokenFile) {
-  const fs = require('fs');
   const data = fs.readFileSync(tokenFile);
-  if(data !== null) {
-    if(!data.toString().startsWith("K8S_GLOBAL_TOKEN")) {
+  if (data !== null) {
+    if (!data.toString().startsWith('K8S_GLOBAL_TOKEN')) {
       return data.toString();
     }
     const properties = propertiesReader(tokenFile);
     return properties.get('K8S_GLOBAL_TOKEN');
-  } else {
-    return "";
   }
-
-
+  return '';
 }
 
 module.exports = {

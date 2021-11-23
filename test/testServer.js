@@ -12,395 +12,385 @@
  * the License.
  */
 
-const chai = require('chai');
 const http = require('http');
 const https = require('https');
-const sinon = require('sinon');
 const fs = require('fs');
+
+const chai = require('chai');
+const sinon = require('sinon');
 const winston = require('winston');
-const { logConfig } = require('../config/app-settings').winston;
-const logger = winston.createLogger(logConfig);
 
 const podMetrics = require('../metrics/podmetrics');
 const kubesdMetrics = require('../metrics/kubesdmetrics');
-const tokenUtil = require('../k8s/tokenUtil');
+const { logConfig } = require('../config/app-settings').winston;
 
-describe('test http server', () => {
-  let server;
-  beforeEach(() => {
-    delete require.cache[require.resolve('../server.js')];
-  });
+const logger = winston.createLogger(logConfig);
 
-  afterEach(() => {
-    server.k8sProxyServer.close();
-    server.metricsHttpServer.close();
-    sinon.restore();
-  });
-
-  it('test http server starts', (done) => {
-    server = require('../server.js');
-    const options = {
-      hostname: 'localhost',
-      port: 5050,
-      path: '/',
-      method: 'GET',
-      timeout: 1000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    const req = http.request(options, (response) => {
-      let respBody = '';
-      response.on('data', (data) => {
-        respBody += data;
-      });
-      response.on('end', () => {
-        logger.debug('response received ', respBody);
-        chai.expect(response.statusCode).to.equal(200);
-        done();
-      });
-    }).on('error', (err) => {
-      done(new Error(`should not succeed ${err}`));
+describe('server', function () {
+  describe('test http server', function () {
+    let server;
+    beforeEach(function () {
+      delete require.cache[require.resolve('../server')];
     });
-    req.setTimeout(2000);
-    req.on('timeout', () => {
-      done(new Error('should not succeed'));
+
+    afterEach(function () {
+      server.k8sProxyServer.close();
+      server.metricsHttpServer.close();
+      sinon.restore();
     });
-    req.end();
 
-  });
+    it('test http server starts', function (done) {
+      server = require('../server');
+      const options = {
+        hostname: 'localhost',
+        port: 5050,
+        path: '/',
+        method: 'GET',
+        timeout: 1000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
 
-  it('test mproxy endpoint', (done) => {
-    server = require('../server.js');
-    const options = {
-      hostname: 'localhost',
-      port: 5050,
-      path: '/mproxy/project1/pod1/metrics',
-      method: 'GET',
-      timeout: 1000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    const podMetricsStub = sinon.stub(podMetrics, 'handleMetricsRoute');
-    http.request(options,(response) => {
-      response.on('end', () => {
-        logger.debug(`end event received for response`);
-        chai.expect(podMetricsStub.called).to.be.true;
-        done();
-      });
-      response.on('data', (data) => {
-        logger.debug(`data event received for response`);
-      });
-    }).end();
-    podMetricsStub.callsFake( (req, resp, k8sCACert, k8sToken) => {
-      logger.debug('pod metrics stub called');
-      resp.end();
-    });
-  });
-
-  it('test kubesd endpoint', (done) => {
-    server = require('../server.js');
-    const options = {
-      hostname: 'localhost',
-      port: 5050,
-      path: '/kubesd/metrics',
-      method: 'GET',
-      timeout: 1000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    const podMetricsStub = sinon.stub(kubesdMetrics, 'handleMetricsRoute');
-    http.request(options,(response) => {
-      response.on('end', () => {
-        logger.debug(`end event received for response`);
-        chai.expect(podMetricsStub.called).to.be.true;
-        done();
-      });
-      response.on('data', (data) => {
-        logger.debug(`data event received for response`);
-      });
-    }).end();
-    podMetricsStub.callsFake( (req, resp, k8sCACert, k8sToken) => {
-      logger.debug('pod metrics stub called');
-      resp.end();
-    });
-  });
-});
-
-describe('test with app url prefix', () => {
-  let server;
-  beforeEach(() => {
-    delete require.cache[require.resolve('../server.js')];
-    process.env.APP_URL_PREFIX = 'v1';
-
-  });
-
-  afterEach(() => {
-    delete process.env.APP_URL_PREFIX
-    server.k8sProxyServer.close();
-    server.metricsHttpServer.close();
-    sinon.restore();
-  });
-
-  it('test http server starts', (done) => {
-    server = require('../server.js');
-    const options = {
-      hostname: 'localhost',
-      port: 5050,
-      path: '/',
-      method: 'GET',
-      timeout: 1000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    const req = http.request(options, (response) => {
-      let respBody = '';
-      response.on('data', (data) => {
-        respBody += data;
-      });
-      response.on('end', () => {
-        logger.debug('response received ', respBody);
-        chai.expect(response.statusCode).to.equal(200);
-        done();
-      });
-    }).on('error', (err) => {
-      done(new Error(`should not succeed ${err}`));
-    });
-    req.setTimeout(2000);
-    req.on('timeout', () => {
-      done(new Error('should not succeed'));
-    });
-    req.end();
-
-  });
-
-  it('test mproxy endpoint', (done) => {
-    server = require('../server.js');
-    const options = {
-      hostname: 'localhost',
-      port: 5050,
-      path: '/v1/mproxy/project1/pod1/metrics',
-      method: 'GET',
-      timeout: 1000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    const podMetricsStub = sinon.stub(podMetrics, 'handleMetricsRoute');
-    http.request(options,(response) => {
-      response.on('end', () => {
-        logger.debug(`end event received for response`);
-        chai.expect(podMetricsStub.called).to.be.true;
-        done();
-      });
-      response.on('data', (data) => {
-        logger.debug(`data event received for response`);
-      });
-    }).end();
-    podMetricsStub.callsFake( (req, resp, k8sCACert, k8sToken) => {
-      logger.debug('pod metrics stub called');
-      resp.end();
-    });
-  });
-
-  it('test kubesd endpoint', (done) => {
-    server = require('../server.js');
-    const options = {
-      hostname: 'localhost',
-      port: 5050,
-      path: '/v1/kubesd/metrics',
-      method: 'GET',
-      timeout: 1000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    const podMetricsStub = sinon.stub(kubesdMetrics, 'handleMetricsRoute');
-    http.request(options,(response) => {
-      response.on('end', () => {
-        logger.debug(`end event received for response`);
-        chai.expect(podMetricsStub.called).to.be.true;
-        done();
-      });
-      response.on('data', (data) => {
-        logger.debug(`data event received for response`);
-      });
-    }).end();
-    podMetricsStub.callsFake( (req, resp, k8sCACert, k8sToken) => {
-      logger.debug('pod metrics stub called');
-      resp.end();
-    });
-  });
-});
-
-describe('test https server', () => {
-
-  let server;
-  beforeEach(() => {
-    delete require.cache[require.resolve('../server.js')];
-  });
-
-  afterEach(() => {
-    server.k8sProxyServer.close();
-    server.metricsHttpServer.close();
-    sinon.restore();
-  });
-
-  beforeEach(() => {
-  });
-
-  afterEach(() => {
-    delete process.env.CERT_KEY_FILE;
-    delete process.env.CERT_KEY_PASSWD_FILE;
-    delete process.env.CERT_FILE;
-    delete process.env.CERT_CA_FILE;
-    sinon.restore();
-  });
-
-  it('test https server starts', (done) => {
-    process.env.CERT_KEY_FILE = 'test/certs/testserver.key';
-    process.env.CERT_FILE = 'test/certs/testserver.pem';
-    process.env.CERT_CA_FILE= 'test/certs/myCA.pem';
-
-    server = require('../server.js');
-    const options = {
-      hostname: 'localhost',
-      port: 5053,
-      path: '/',
-      method: 'GET',
-      timeout: 1000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-    const req = https.request(options, (response) => {
-      let respBody = '';
-      response.on('data', (data) => {
-        respBody += data;
-      });
-      response.on('end', () => {
-        logger.debug('response received ', respBody);
-        chai.expect(response.statusCode).to.equal(200);
-      });
-    }).on('error', (err) => {
-      logger.debug(err.message);
-      if(err.message === 'self signed certificate') {
-        done();
-      } else {
+      const req = http.request(options, (response) => {
+        let respBody = '';
+        response.on('data', (data) => {
+          respBody += data;
+        });
+        response.on('end', () => {
+          logger.debug('response received ', respBody);
+          chai.expect(response.statusCode).to.equal(200);
+          done();
+        });
+      }).on('error', (err) => {
         done(new Error(`should not succeed ${err}`));
-      }
+      });
+      req.setTimeout(2000);
+      req.on('timeout', () => {
+        done(new Error('should not succeed'));
+      });
+      req.end();
     });
-    req.setTimeout(2000);
-    req.on('timeout', () => {
-      done(new Error('should not succeed'));
-    });
-    req.end();
 
+    it('test mproxy endpoint', function (done) {
+      server = require('../server');
+      const options = {
+        hostname: 'localhost',
+        port: 5050,
+        path: '/mproxy/project1/pod1/metrics',
+        method: 'GET',
+        timeout: 1000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+
+      const podMetricsStub = sinon.stub(podMetrics, 'handleMetricsRoute');
+      http.request(options, (response) => {
+        response.on('end', () => {
+          logger.debug('end event received for response');
+          chai.expect(podMetricsStub.called).to.be.true;
+          done();
+        });
+        response.on('data', () => {
+          logger.debug('data event received for response');
+        });
+      }).end();
+      podMetricsStub.callsFake(({ response }) => {
+        logger.debug('pod metrics stub called');
+        response.end();
+      });
+    });
+
+    it('test kubesd endpoint', function (done) {
+      server = require('../server');
+      const options = {
+        hostname: 'localhost',
+        port: 5050,
+        path: '/kubesd/metrics',
+        method: 'GET',
+        timeout: 1000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+
+      const podMetricsStub = sinon.stub(kubesdMetrics, 'handleMetricsRoute');
+      http.request(options, (response) => {
+        response.on('end', () => {
+          logger.debug('end event received for response');
+          chai.expect(podMetricsStub.called).to.be.true;
+          done();
+        });
+        response.on('data', () => {
+          logger.debug('data event received for response');
+        });
+      }).end();
+      podMetricsStub.callsFake(({ response }) => {
+        logger.debug('pod metrics stub called');
+        response.end();
+      });
+    });
   });
 
-  it('test https server starts with encrypted key', (done) => {
-    process.env.CERT_KEY_FILE = 'test/certs/testserver_encrypted.key';
-    process.env.CERT_KEY_PASSWD_FILE = 'test/certs/testserver_encrypted.passwd';
-    process.env.CERT_FILE = 'test/certs/testserver.pem';
-    process.env.CERT_CA_FILE= 'test/certs/myCA.pem';
+  describe('test with app url prefix', function () {
+    let server;
+    beforeEach(function () {
+      delete require.cache[require.resolve('../server')];
+      process.env.APP_URL_PREFIX = 'v1';
+    });
 
-    server = require('../server.js');
-    const options = {
-      hostname: 'localhost',
-      port: 5053,
-      path: '/',
-      method: 'GET',
-      timeout: 1000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-    const req = https.request(options, (response) => {
-      let respBody = '';
-      response.on('data', (data) => {
-        respBody += data;
-      });
-      response.on('end', () => {
-        logger.debug('response received ', respBody);
-        chai.expect(response.statusCode).to.equal(200);
-      });
-    }).on('error', (err) => {
-      if(err.message === 'self signed certificate') {
-        done();
-      } else {
+    afterEach(function () {
+      delete process.env.APP_URL_PREFIX;
+      server.k8sProxyServer.close();
+      server.metricsHttpServer.close();
+      sinon.restore();
+    });
+
+    it('test http server starts', function (done) {
+      server = require('../server');
+      const options = {
+        hostname: 'localhost',
+        port: 5050,
+        path: '/',
+        method: 'GET',
+        timeout: 1000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+
+      const req = http.request(options, (response) => {
+        let respBody = '';
+        response.on('data', (data) => {
+          respBody += data;
+        });
+        response.on('end', () => {
+          logger.debug('response received ', respBody);
+          chai.expect(response.statusCode).to.equal(200);
+          done();
+        });
+      }).on('error', (err) => {
         done(new Error(`should not succeed ${err}`));
-      }
-    });
-    req.setTimeout(2000);
-    req.on('timeout', () => {
-      done(new Error('should not succeed'));
-    });
-    req.end();
-
-  });
-});
-
-describe('test for k8 token env variables', () => {
-  let server;
-  beforeEach(() => {
-    delete require.cache[require.resolve('../server.js')];
-  });
-
-  afterEach(() => {
-    server.k8sProxyServer.close();
-    server.metricsHttpServer.close();
-    sinon.restore();
-  });
-
-  it('test mproxy endpoint', (done) => {
-    delete process.env.TOKEN_FILE;
-    delete process.env.K8S_CACERT;
-    const podMetricsStub = sinon.stub(podMetrics, 'handleMetricsRoute');
-    podMetricsStub.callsFake( (req, resp, k8sCACert, k8sToken) => {
-      logger.debug('pod metrics stub called');
-      resp.end();
-    });
-
-
-    var fsStub = sinon.stub(fs, 'readFileSync').withArgs('/var/run/secrets/kubernetes.io/serviceaccount/token').callsFake((arg) => {
-      return Buffer.from("K8S_GLOBAL_TOKEN=mytoken11");
-    }).withArgs('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt').callsFake((arg) => {
-      return Buffer.from("cacert");
-    });
-    fs.readFileSync.callThrough();
-
-    server = require('../server.js');
-    const options = {
-      hostname: 'localhost',
-      port: 5050,
-      path: '/mproxy/project1/pod1/metrics',
-      method: 'GET',
-      timeout: 1000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    http.request(options,(response) => {
-      response.on('end', () => {
-        logger.debug(`end event received for response`);
-        chai.expect(podMetricsStub.called).to.be.true;
-        sinon.restore();
-        done();
       });
-      response.on('data', (data) => {
-        logger.debug(`data event received for response ${data}`);
+      req.setTimeout(2000);
+      req.on('timeout', () => {
+        done(new Error('should not succeed'));
       });
-    }).end();
+      req.end();
+    });
+
+    it('test mproxy endpoint', function (done) {
+      server = require('../server');
+      const options = {
+        hostname: 'localhost',
+        port: 5050,
+        path: '/v1/mproxy/project1/pod1/metrics',
+        method: 'GET',
+        timeout: 1000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+
+      const podMetricsStub = sinon.stub(podMetrics, 'handleMetricsRoute');
+      http.request(options, (response) => {
+        response.on('end', () => {
+          logger.debug('end event received for response');
+          chai.expect(podMetricsStub.called).to.be.true;
+          done();
+        });
+        response.on('data', () => {
+          logger.debug('data event received for response');
+        });
+      }).end();
+      podMetricsStub.callsFake(({ response }) => {
+        logger.debug('pod metrics stub called');
+        response.end();
+      });
+    });
+
+    it('test kubesd endpoint', function (done) {
+      server = require('../server');
+      const options = {
+        hostname: 'localhost',
+        port: 5050,
+        path: '/v1/kubesd/metrics',
+        method: 'GET',
+        timeout: 1000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+
+      const podMetricsStub = sinon.stub(kubesdMetrics, 'handleMetricsRoute');
+      http.request(options, (response) => {
+        response.on('end', () => {
+          logger.debug('end event received for response');
+          chai.expect(podMetricsStub.called).to.be.true;
+          done();
+        });
+        response.on('data', () => {
+          logger.debug('data event received for response');
+        });
+      }).end();
+      podMetricsStub.callsFake(({ response }) => {
+        logger.debug('pod metrics stub called');
+        response.end();
+      });
+    });
   });
 
+  describe('test https server', function () {
+    let server;
+    beforeEach(function () {
+      delete require.cache[require.resolve('../server')];
+    });
+
+    afterEach(function () {
+      server.k8sProxyServer.close();
+      server.metricsHttpServer.close();
+
+      delete process.env.CERT_KEY_FILE;
+      delete process.env.CERT_KEY_PASSWD_FILE;
+      delete process.env.CERT_FILE;
+      delete process.env.CERT_CA_FILE;
+
+      sinon.restore();
+    });
+
+    it('test https server starts', function (done) {
+      process.env.CERT_KEY_FILE = 'test/certs/testserver.key';
+      process.env.CERT_FILE = 'test/certs/testserver.pem';
+      process.env.CERT_CA_FILE = 'test/certs/myCA.pem';
+
+      server = require('../server');
+      const options = {
+        hostname: 'localhost',
+        port: 5053,
+        path: '/',
+        method: 'GET',
+        timeout: 1000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+      const req = https.request(options, (response) => {
+        let respBody = '';
+        response.on('data', (data) => {
+          respBody += data;
+        });
+        response.on('end', () => {
+          logger.debug('response received ', respBody);
+          chai.expect(response.statusCode).to.equal(200);
+        });
+      }).on('error', (err) => {
+        logger.debug(err.message);
+        if (err.message === 'self signed certificate') {
+          done();
+        } else {
+          done(new Error(`should not succeed ${err}`));
+        }
+      });
+      req.setTimeout(2000);
+      req.on('timeout', () => {
+        done(new Error('should not succeed'));
+      });
+      req.end();
+    });
+
+    it('test https server starts with encrypted key', function (done) {
+      process.env.CERT_KEY_FILE = 'test/certs/testserver_encrypted.key';
+      process.env.CERT_KEY_PASSWD_FILE = 'test/certs/testserver_encrypted.passwd';
+      process.env.CERT_FILE = 'test/certs/testserver.pem';
+      process.env.CERT_CA_FILE = 'test/certs/myCA.pem';
+
+      server = require('../server');
+      const options = {
+        hostname: 'localhost',
+        port: 5053,
+        path: '/',
+        method: 'GET',
+        timeout: 1000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+      const req = https.request(options, (response) => {
+        let respBody = '';
+        response.on('data', (data) => {
+          respBody += data;
+        });
+        response.on('end', () => {
+          logger.debug('response received ', respBody);
+          chai.expect(response.statusCode).to.equal(200);
+        });
+      }).on('error', (err) => {
+        if (err.message === 'self signed certificate') {
+          done();
+        } else {
+          done(new Error(`should not succeed ${err}`));
+        }
+      });
+      req.setTimeout(2000);
+      req.on('timeout', () => {
+        done(new Error('should not succeed'));
+      });
+      req.end();
+    });
+  });
+
+  describe('test for k8 token env variables', function () {
+    let server;
+    beforeEach(function () {
+      delete require.cache[require.resolve('../server')];
+    });
+
+    afterEach(function () {
+      server.k8sProxyServer.close();
+      server.metricsHttpServer.close();
+      sinon.restore();
+    });
+
+    it('test mproxy endpoint', function (done) {
+      delete process.env.TOKEN_FILE;
+      delete process.env.K8S_CACERT;
+      const podMetricsStub = sinon.stub(podMetrics, 'handleMetricsRoute');
+      podMetricsStub.callsFake(({ response }) => {
+        logger.debug('pod metrics stub called');
+        response.end();
+      });
+
+      sinon.stub(fs, 'readFileSync')
+        .withArgs('/var/run/secrets/kubernetes.io/serviceaccount/token')
+        .callsFake(() => Buffer.from('K8S_GLOBAL_TOKEN=mytoken11'))
+        .withArgs('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
+        .callsFake(() => Buffer.from('cacert'));
+      fs.readFileSync.callThrough();
+
+      server = require('../server');
+      const options = {
+        hostname: 'localhost',
+        port: 5050,
+        path: '/mproxy/project1/pod1/metrics',
+        method: 'GET',
+        timeout: 1000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+
+      http.request(options, (response) => {
+        response.on('end', () => {
+          logger.debug('end event received for response');
+          chai.expect(podMetricsStub.called).to.be.true;
+          sinon.restore();
+          done();
+        });
+        response.on('data', (data) => {
+          logger.debug(`data event received for response ${data}`);
+        });
+      }).end();
+    });
+  });
 });

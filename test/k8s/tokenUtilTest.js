@@ -12,43 +12,38 @@
  * the License.
  */
 
+const fs = require('fs');
+
+const chai = require('chai');
+const sinon = require('sinon');
 const winston = require('winston');
+
 const { logConfig } = require('../../config/app-settings').winston;
+const tokenUtil = require('../../k8s/tokenUtil');
+
 const logger = winston.createLogger(logConfig);
 
-const tokenUtil = require('../../k8s/tokenUtil.js');
-const chai = require('chai');
-const os = require('os');
-const sinon = require('sinon');
-const fs = require('fs');
-describe('test token utils', () => {
-  beforeEach(() => {
-  });
-
-  afterEach(() => {
-  });
-
-  it('test get token from properties', () => {
-    var readFileStub = sinon.stub(fs, 'readFileSync').returns(Buffer.from("K8S_GLOBAL_TOKEN=mytoken11"));
+describe('k8s/tokenUtil', function () {
+  it('test get token from properties', function () {
+    const readFileStub = sinon.stub(fs, 'readFileSync').returns(Buffer.from('K8S_GLOBAL_TOKEN=mytoken11'));
     logger.debug('token utils testing calling deriveToken');
     const token = tokenUtil.deriveToken('path/to/token');
-    logger.debug('token utils testing got token ' + token);
+    logger.debug(`token utils testing got token ${token}`);
     chai.expect(token).to.equal('mytoken11');
     readFileStub.restore();
   });
 
-  it('test get token raw', () => {
-    var readFileStub = sinon.stub(fs, 'readFileSync').returns(Buffer.from("mytoken"));
+  it('test get token raw', function () {
+    const readFileStub = sinon.stub(fs, 'readFileSync').returns(Buffer.from('mytoken'));
     const token = tokenUtil.deriveToken('path/to/token');
     chai.expect(token).to.equal('mytoken');
     readFileStub.restore();
   });
 
-  it('test null token', () => {
-    var readFileStub = sinon.stub(fs, 'readFileSync').returns(null);
+  it('test null token', function () {
+    const readFileStub = sinon.stub(fs, 'readFileSync').returns(null);
     const token = tokenUtil.deriveToken('path/to/token');
     chai.expect(token).to.be.empty;
     readFileStub.restore();
   });
-
 });

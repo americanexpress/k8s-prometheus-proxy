@@ -12,58 +12,53 @@
  * the License.
  */
 
-const errorHandler = require('../../error-handler/errorHandler');
-
-const winston = require('winston');
-const { logConfig } = require('../../config/app-settings').winston;
-const logger = winston.createLogger(logConfig);
-
-
 const chai = require('chai');
-const http = require('http');
-const https = require('https');
 const sinon = require('sinon');
 
-describe('test error handler', () => {
+const errorHandler = require('../../error-handler/errorHandler');
+
+describe('error-handler/errorHandler', function () {
   let req;
   let res;
-  const next = sinon.stub();
+  let next;
 
-  beforeEach(() => {
+  beforeEach(function () {
     req = {
       params: {},
-      body: {}
+      body: {},
     };
 
     res = {
       data: null,
       code: null,
-      status (status) {
+      status(status) {
         this.code = status;
         return this;
       },
-      send (payload) {
+      send(payload) {
         this.data = payload;
       },
-      headersSent: false
+      headersSent: false,
     };
+
+    next = sinon.stub();
   });
 
-  afterEach(() => {
+  afterEach(function () {
     next.reset();
   });
 
-  it('test error handler', (done) => {
+  it('test error handler', function (done) {
     errorHandler(new Error(), req, res, next);
     chai.expect(res.code).to.equal(500);
     chai.expect(res.data).to.equal('Error in processing request');
     done();
   });
 
-  it('test headers sent', (done) => {
+  it('test headers sent', function (done) {
     res.headersSent = true;
     errorHandler(new Error(), req, res, next);
     chai.expect(next.called).to.be.true;
     done();
   });
-})
+});

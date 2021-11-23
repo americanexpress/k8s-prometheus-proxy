@@ -12,29 +12,29 @@
  * the License.
  */
 
-const winston = require('winston');
-const { logConfig } = require('../config/app-settings').winston;
-const logger = winston.createLogger(logConfig);
-
 const url = require('url');
+
+const winston = require('winston');
 const querystring = require('querystring');
 const httpProxy = require('http-proxy');
 
-const apiProxy = httpProxy.createProxyServer({secure: false, ignorePath: true});
 const whiteListUtil = require('./whitelistUtil');
 const podmetricsUtil = require('./podmetricsUtil');
+const { logConfig } = require('../config/app-settings').winston;
+
+const apiProxy = httpProxy.createProxyServer({ secure: false, ignorePath: true });
+const logger = winston.createLogger(logConfig);
 
 function sendError(res) {
   res.writeHead(500, {
-    'Content-Type': 'text/plain'
+    'Content-Type': 'text/plain',
   });
   res.end('#Unable to collect metrics');
 }
 
-
 function handleMetricsRoute(req, res) {
-  const pod = req.query.pod;
-  if(!whiteListUtil.isWhiteListedIP(pod)) {
+  const { pod } = req.query;
+  if (!whiteListUtil.isWhiteListedIP(pod)) {
     logger.error(`pod ip ${pod} is not part of whitelisted cidr`);
     sendError(res);
     return;
@@ -45,38 +45,36 @@ function handleMetricsRoute(req, res) {
   if (req.query.target_scheme != null) {
     scheme = req.query.target_scheme;
   }
-  console.log('req url ' + req.url);
+  console.log(`req url ${req.url}`);
   const parsedUrl = url.parse(req.url);
-  let queryObj = querystring.parse(parsedUrl.query);
+  const queryObj = querystring.parse(parsedUrl.query);
   delete queryObj.pod;
   delete queryObj.target_scheme;
   delete queryObj.target_port;
-  let targetPath = podmetricsUtil.deriveUpstreamURI(parsedUrl.pathname, '/kubesd');
+  const targetPath = podmetricsUtil.deriveUpstreamURI(parsedUrl.pathname, '/kubesd');
   logger.debug(`using target path ${targetPath}`);
-  if(!whiteListUtil.isWhitelistedPath(targetPath)) {
+  if (!whiteListUtil.isWhitelistedPath(targetPath)) {
     sendError(res);
     return;
   }
-
 
   const targetUrl = url.format({
     protocol: scheme,
     port: targetPort,
     hostname: pod,
     pathname: targetPath,
-    query: queryObj
+    query: queryObj,
   });
 
-  apiProxy.web(req, res, {target: targetUrl}, (err) => {
+  apiProxy.web(req, res, { target: targetUrl }, (err) => {
     logger.error(err);
     logger.debug(`error in processing request ${req.get('Host')}${req.url}`);
     res.writeHead(500, {
-      'Content-Type': 'text/plain'
+      'Content-Type': 'text/plain',
     });
     res.end('#Unable to collect metrics');
   });
 }
-
 
 module.exports = {
   handleMetricsRoute,
