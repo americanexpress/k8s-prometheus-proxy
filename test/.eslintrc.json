@@ -13,6 +13,8 @@
     "prefer-arrow-callback": 0,
     "func-names": 0,
     // _getData is a part of https://www.npmjs.com/package/node-mocks-http
-    "no-underscore-dangle": ["error", { "allow": ["_getData"] }]
+    "no-underscore-dangle": ["error", { "allow": ["_getData"] }],
+    // repeated imports when changing the environment
+    "global-require": 0
   }
 }
