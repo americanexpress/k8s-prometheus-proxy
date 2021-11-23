@@ -163,9 +163,6 @@ describe('pod request headers tests', function () {
 describe('pod metrics tests:', function () {
   let request;
   let response;
-  EventEmitter.prototype.setTimeout = function () { return this; };
-  EventEmitter.prototype.end = function () {};
-  EventEmitter.prototype.destroy = function () {};
 
   beforeEach(function () {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
@@ -345,8 +342,16 @@ describe('pod metrics tests:', function () {
   });
 
   it('test error event on response  ', function (done) {
-    const emitterReq = new EventEmitter();
-    const emitterResp = new EventEmitter();
+    const emitterReq = Object.assign(new EventEmitter(), {
+      setTimeout: function mockSetTimeout() { return this; },
+      end: () => {},
+      destroy: () => {},
+    });
+    const emitterResp = Object.assign(new EventEmitter(), {
+      setTimeout: function mockSetTimeout() { return this; },
+      end: () => {},
+      destroy: () => {},
+    });
     const podIPMap = new Map();
     podIPMap.set('10.0.0.1', { podName: 'mypod', podIP: '10.0.0.1', uid: 'podUid' });
     podIPMap.set('10.0.0.2', { podName: 'mypod', podIP: '10.0.0.2', uid: 'podUid' });
@@ -375,7 +380,11 @@ describe('pod metrics tests:', function () {
   });
 
   it('test error event on request  ', function (done) {
-    const emitterReq = new EventEmitter();
+    const emitterReq = Object.assign(new EventEmitter(), {
+      setTimeout: function mockSetTimeout() { return this; },
+      end: () => {},
+      destroy: () => {},
+    });
 
     const podIPMap = new Map();
     podIPMap.set('10.0.0.1', { podName: 'mypod', podIP: '10.0.0.1', uid: 'podUid' });
@@ -404,7 +413,11 @@ describe('pod metrics tests:', function () {
   });
 
   it('test timeout event on request  ', function (done) {
-    const emitterReq = new EventEmitter();
+    const emitterReq = Object.assign(new EventEmitter(), {
+      setTimeout: function mockSetTimeout() { return this; },
+      end: () => {},
+      destroy: () => {},
+    });
 
     const podIPMap = new Map();
     podIPMap.set('10.0.0.1', { podName: 'mypod', podIP: '10.0.0.1', uid: 'podUid' });
@@ -554,9 +567,6 @@ describe('finishProcessing test', function () {
 describe('pod metrics namespace name validation', function () {
   let request;
   let response;
-  EventEmitter.prototype.setTimeout = function () { return this; };
-  EventEmitter.prototype.end = function () {};
-  EventEmitter.prototype.destroy = function () {};
 
   beforeEach(function () {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)
@@ -612,9 +622,6 @@ describe('pod metrics namespace name validation', function () {
 describe('pod metrics upstream path name validation', function () {
   let request;
   let response;
-  EventEmitter.prototype.setTimeout = function () { return this; };
-  EventEmitter.prototype.end = function () {};
-  EventEmitter.prototype.destroy = function () {};
 
   beforeEach(function () {
     nock(`https://${process.env.KUBERNETES_SERVICE_HOST}:${process.env.KUBERNETES_SERVICE_PORT}`)

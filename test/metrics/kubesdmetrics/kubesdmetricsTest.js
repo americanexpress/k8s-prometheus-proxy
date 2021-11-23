@@ -169,6 +169,7 @@ describe('kubesd metrics tests:', function () {
 
     const httpProxyStub = {};
     const apiProxyStub = {};
+    // eslint-disable-next-line max-params -- http-proxy createProxyServer returned middleware
     apiProxyStub.web = function (req, res, targetObj, errorCallback) {
       logger.debug(targetObj);
       const parsedUrl = url.parse(targetObj.target);
