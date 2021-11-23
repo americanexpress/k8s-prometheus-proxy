@@ -1,0 +1,24 @@
+# SCM
+.git
+.gitignore
+.github
+
+# Node.js & npm
+node_modules
+*.log
+
+# documentation
+docs
+README.md
+CODE_OF_CONDUCT.md
+# retain LICENSE.txt
+# retain SECURITY.md
+
+# testing
+test
+.eslintrc.json
+cacert
+token
+
+# building
+Dockerfile
