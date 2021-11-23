@@ -49,7 +49,7 @@ let k8sProxyServer;
 let appUrlPrefix = process.env.APP_URL_PREFIX;
 
 const defaultRouteHandler = function(req, res) {
-  logger.debug(`Landing url...${process.env.name} ${packageJson.version} is running on ${os.hostname()} on http port (${httpPort})`);
+  logger.debug(`Landing url...${process.env.NAME} ${packageJson.version} is running on ${os.hostname()} on http port (${httpPort})`);
   res.json({ message: `kubernetes prometheus proxy` });
 };
 
@@ -92,7 +92,7 @@ if (certkeyFile === undefined || certkeyFile === null) {
   k8sProxyServer.listen(httpPort, () => {
     logger.debug(`http server is listening on ${httpPort}`);
   });
-  logger.debug(`${process.env.name} ${packageJson.version} is running on ${os.hostname()} on http port ${httpPort}`);
+  logger.debug(`${process.env.NAME} ${packageJson.version} is running on ${os.hostname()} on http port ${httpPort}`);
 } else {
   logger.debug(`creating https server`);
   const privateKey = fs.readFileSync(certkeyFile);
@@ -113,7 +113,7 @@ if (certkeyFile === undefined || certkeyFile === null) {
   k8sProxyServer.listen(httpsPort, '0.0.0.0', () => {
     logger.debug(`https server is listening on  ${httpsPort}`);
   });
-  logger.debug(`${process.env.name} ${packageJson.version} is running on ${os.hostname()} https port ( ${httpPort} )`);
+  logger.debug(`${process.env.NAME} ${packageJson.version} is running on ${os.hostname()} https port ( ${httpPort} )`);
 }
 
 const metricsHttpServer = http.createServer(metricsApp);
