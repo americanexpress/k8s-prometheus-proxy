@@ -21,7 +21,7 @@ const app = require('../../labels/podlabels');
 
 const logger = winston.createLogger(logConfig);
 
-describe('test labels', function () {
+describe('labels/podlabels', function () {
   it('test label addition', function () {
     const metricsArray = [
       'nginx_http_connections{state="reading"} 0',

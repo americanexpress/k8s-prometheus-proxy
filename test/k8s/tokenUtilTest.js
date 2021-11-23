@@ -23,7 +23,7 @@ const tokenUtil = require('../../k8s/tokenUtil');
 
 const logger = winston.createLogger(logConfig);
 
-describe('test token utils', function () {
+describe('k8s/tokenUtil', function () {
   it('test get token from properties', function () {
     const readFileStub = sinon.stub(fs, 'readFileSync').returns(Buffer.from('K8S_GLOBAL_TOKEN=mytoken11'));
     logger.debug('token utils testing calling deriveToken');

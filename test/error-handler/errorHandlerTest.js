@@ -17,7 +17,7 @@ const sinon = require('sinon');
 
 const errorHandler = require('../../error-handler/errorHandler');
 
-describe('test error handler', function () {
+describe('error-handler/errorHandler', function () {
   let req;
   let res;
   let next;

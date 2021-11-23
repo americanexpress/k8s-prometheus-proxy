@@ -15,7 +15,7 @@
 const chai = require('chai');
 const whitelistUtil = require('../../../metrics/whitelistUtil');
 
-describe('whitelist tests', function () {
+describe('metrics/whitelistUtil', function () {
   it('test namespace', function () {
     chai.expect(whitelistUtil.isValidNamespaceName('01010')).to.be.true;
     chai.expect(whitelistUtil.isValidNamespaceName('abc')).to.be.true;

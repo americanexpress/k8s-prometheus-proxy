@@ -24,7 +24,7 @@ const { logConfig } = require('../../../config/app-settings').winston;
 
 const logger = winston.createLogger(logConfig);
 
-describe('kubesd metrics tests:', function () {
+describe('metrics/kubesdmetrics', function () {
   beforeEach(function () {
     delete require.cache[require.resolve('../../../metrics/whitelistUtil')];
     process.env.CIDR_WHITELIST = '10.0.0.1/24';
