@@ -95,9 +95,9 @@ describe('test http server', function () {
         logger.debug('data event received for response');
       });
     }).end();
-    podMetricsStub.callsFake((req, resp, k8sCACert, k8sToken) => {
+    podMetricsStub.callsFake(({ response }) => {
       logger.debug('pod metrics stub called');
-      resp.end();
+      response.end();
     });
   });
 
@@ -125,9 +125,9 @@ describe('test http server', function () {
         logger.debug('data event received for response');
       });
     }).end();
-    podMetricsStub.callsFake((req, resp, k8sCACert, k8sToken) => {
+    podMetricsStub.callsFake(({ response }) => {
       logger.debug('pod metrics stub called');
-      resp.end();
+      response.end();
     });
   });
 });
@@ -203,9 +203,9 @@ describe('test with app url prefix', function () {
         logger.debug('data event received for response');
       });
     }).end();
-    podMetricsStub.callsFake((req, resp, k8sCACert, k8sToken) => {
+    podMetricsStub.callsFake(({ response }) => {
       logger.debug('pod metrics stub called');
-      resp.end();
+      response.end();
     });
   });
 
@@ -233,9 +233,9 @@ describe('test with app url prefix', function () {
         logger.debug('data event received for response');
       });
     }).end();
-    podMetricsStub.callsFake((req, resp, k8sCACert, k8sToken) => {
+    podMetricsStub.callsFake(({ response }) => {
       logger.debug('pod metrics stub called');
-      resp.end();
+      response.end();
     });
   });
 });
@@ -360,9 +360,9 @@ describe('test for k8 token env variables', function () {
     delete process.env.TOKEN_FILE;
     delete process.env.K8S_CACERT;
     const podMetricsStub = sinon.stub(podMetrics, 'handleMetricsRoute');
-    podMetricsStub.callsFake((req, resp, k8sCACert, k8sToken) => {
+    podMetricsStub.callsFake(({ response }) => {
       logger.debug('pod metrics stub called');
-      resp.end();
+      response.end();
     });
 
     sinon.stub(fs, 'readFileSync')

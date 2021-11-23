@@ -60,7 +60,12 @@ describe('pod metrics tests with no data:', function () {
   it('test podsDataPromise promise error', function (done) {
     const podStub = sinon.stub(pods, 'podData')
       .returns(Promise.reject(new Error('testing error')));
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received${rspData}`);
@@ -76,7 +81,12 @@ describe('pod metrics tests with no data:', function () {
   it('test podsDataPromise no pods', function (done) {
     const podStub = sinon.stub(pods, 'podData')
       .returns(Promise.resolve(new Map()));
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received ${rspData}`);
@@ -127,7 +137,12 @@ describe('pod request headers tests', function () {
     const response = httpMocks.createResponse({
       eventEmitter: events.EventEmitter,
     });
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received ${rspData}`);
@@ -187,7 +202,12 @@ describe('pod metrics tests:', function () {
       .get('/metrics')
       .reply(200, fs.readFileSync('test/mockResponses/10.1.1.2.metrics.txt').toString());
 
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received ${rspData}`);
@@ -209,7 +229,12 @@ describe('pod metrics tests:', function () {
       .get('/metrics')
       .reply(200, fs.readFileSync('test/mockResponses/10.1.1.2.metrics.txt').toString());
 
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received ${rspData}`);
@@ -231,7 +256,12 @@ describe('pod metrics tests:', function () {
       .delayConnection(20000)
       .reply(500, 'Internal Server Error');
 
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received ${rspData}`);
@@ -250,7 +280,12 @@ describe('pod metrics tests:', function () {
       .get('/metrics')
       .reply(404);
 
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received${rspData}`);
@@ -269,7 +304,12 @@ describe('pod metrics tests:', function () {
       .get('/metrics')
       .reply(404);
 
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received${rspData}`);
@@ -289,7 +329,12 @@ describe('pod metrics tests:', function () {
       .delayConnection(20000)
       .reply(500, 'Internal Server Error');
 
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received${rspData}`);
@@ -307,7 +352,12 @@ describe('pod metrics tests:', function () {
     podIPMap.set('10.0.0.2', { podName: 'mypod', podIP: '10.0.0.2', uid: 'podUid' });
     const podStub = sinon.stub(pods, 'podData').returns(Promise.resolve(podIPMap));
     const httpsRequestMock = sinon.stub(http, 'request').returns(emitterReq);
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     setTimeout(() => {
       httpsRequestMock.callArgWith(1, emitterResp);
       emitterResp.emit('error');
@@ -332,7 +382,12 @@ describe('pod metrics tests:', function () {
     podIPMap.set('10.0.0.2', { podName: 'mypod', podIP: '10.0.0.2', uid: 'podUid' });
     const podStub = sinon.stub(pods, 'podData').returns(Promise.resolve(podIPMap));
     const httpsRequestMock = sinon.stub(http, 'request').returns(emitterReq);
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     setTimeout(() => {
       emitterReq.emit('error');
     }, 500);
@@ -356,7 +411,12 @@ describe('pod metrics tests:', function () {
     podIPMap.set('10.0.0.2', { podName: 'mypod', podIP: '10.0.0.2', uid: 'podUid' });
     const podStub = sinon.stub(pods, 'podData').returns(Promise.resolve(podIPMap));
     const httpsRequestMock = sinon.stub(http, 'request').returns(emitterReq);
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     setTimeout(() => {
       emitterReq.emit('timeout');
     }, 500);
@@ -410,7 +470,12 @@ describe('pod multilevel context tests:', function () {
       },
     });
 
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received ${rspData}`);
@@ -437,7 +502,12 @@ describe('pod multilevel context tests:', function () {
       },
     });
 
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
     response.on('end', () => {
       const rspData = response._getData();
       logger.debug(`response received ${rspData}`);
@@ -471,7 +541,13 @@ describe('finishProcessing test', function () {
       chai.expect(rspData).to.equal('#Unable to collect data.');
       done();
     });
-    metrics.finishProcessing(2, 1, 1, 0, response);
+    metrics.finishProcessing({
+      noOfPods: 2,
+      completedRequests: 1,
+      successCount: 1,
+      errorCount: 0,
+      res: response,
+    });
   });
 });
 
@@ -524,7 +600,12 @@ describe('pod metrics namespace name validation', function () {
       chai.expect(rspData).to.equal('#Unable to collect data.');
       done();
     });
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
   });
 });
 
@@ -576,6 +657,11 @@ describe('pod metrics upstream path name validation', function () {
       chai.expect(rspData).to.equal('#Unable to collect data.');
       done();
     });
-    metrics.handleMetricsRoute(request, response, process.env.K8S_CACERT, 'SOMETOKEN');
+    metrics.handleMetricsRoute({
+      request,
+      response,
+      k8sCACert: process.env.K8S_CACERT,
+      k8sToken: 'SOMETOKEN',
+    });
   });
 });

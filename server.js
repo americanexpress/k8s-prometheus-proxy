@@ -47,10 +47,10 @@ const metricsHttpPort = process.env.METRICS_HTTP_PORT || 5055;
 let k8sProxyServer;
 let appUrlPrefix = process.env.APP_URL_PREFIX;
 
-const defaultRouteHandler = function (req, res) {
+function defaultRouteHandler(req, res) {
   logger.debug(`Landing url...${process.env.name} ${packageJson.version} is running on ${os.hostname()} on http port (${httpPort})`);
   res.json({ message: 'kubernetes prometheus proxy' });
-};
+}
 
 if (appUrlPrefix === undefined || appUrlPrefix === null) {
   app.use('/', router);
@@ -66,9 +66,14 @@ app.use(errorHandler);
 
 router.get('/', defaultRouteHandler);
 
-router.get('/mproxy/:upstreamNamespace/:upstreamService/*', (req, res) => {
-  logger.debug(`retrieving metrics from ${req.params.upstreamNamespace} and service ${req.params.upstreamService}`);
-  podMetrics.handleMetricsRoute(req, res, k8sCACert, k8sToken);
+router.get('/mproxy/:upstreamNamespace/:upstreamService/*', (request, response) => {
+  logger.debug(`retrieving metrics from ${request.params.upstreamNamespace} and service ${request.params.upstreamService}`);
+  podMetrics.handleMetricsRoute({
+    request,
+    response,
+    k8sCACert,
+    k8sToken,
+  });
 });
 
 router.get('/kubesd/*', (req, res) => {
