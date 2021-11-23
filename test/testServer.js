@@ -249,17 +249,12 @@ describe('test https server', function () {
   afterEach(function () {
     server.k8sProxyServer.close();
     server.metricsHttpServer.close();
-    sinon.restore();
-  });
 
-  beforeEach(function () {
-  });
-
-  afterEach(function () {
     delete process.env.CERT_KEY_FILE;
     delete process.env.CERT_KEY_PASSWD_FILE;
     delete process.env.CERT_FILE;
     delete process.env.CERT_CA_FILE;
+
     sinon.restore();
   });
 
