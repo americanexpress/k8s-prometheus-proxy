@@ -17,9 +17,21 @@ const winston = require('winston');
 const { logConfig } = require('../config/app-settings').winston;
 
 const logger = winston.createLogger(logConfig);
+const validNamespaceRegex = /^[\da-z]([\da-z-]*[\da-z])?$/;
+
+function createWhiteListArray(csvStr) {
+  if (csvStr) return csvStr.split(',');
+  return [];
+}
+
+function createRegexArray(csvStr) {
+  const re = [];
+  createWhiteListArray(csvStr).forEach((s) => { re.push(new RegExp(s)); });
+  return re;
+}
+
 const metricsPathWhiteList = createRegexArray(process.env.METRICS_PATH_WHITELIST);
 const cidrWhitelist = createWhiteListArray(process.env.CIDR_WHITELIST);
-const validNamespaceRegex = /^[\da-z]([\da-z-]*[\da-z])?$/;
 
 function isWhitelistedPath(targetPath) {
   let whiteListMatchFound = false;
@@ -46,17 +58,6 @@ function isWhiteListedIP(podIP) {
 
 function isValidNamespaceName(projectName) {
   return projectName.length <= 63 && validNamespaceRegex.test(projectName);
-}
-
-function createWhiteListArray(csvStr) {
-  if (csvStr) return csvStr.split(',');
-  return [];
-}
-
-function createRegexArray(csvStr) {
-  const re = [];
-  createWhiteListArray(csvStr).forEach((s) => { re.push(new RegExp(s)); });
-  return re;
 }
 
 module.exports = {
