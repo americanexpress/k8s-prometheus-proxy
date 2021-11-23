@@ -17,7 +17,6 @@ const winston = require('winston');
 const { logConfig } = require('../config/app-settings').winston;
 
 const logger = winston.createLogger(logConfig);
-const validNamespaceRegex = /^[\da-z]([\da-z-]*[\da-z])?$/;
 
 function createWhiteListArray(csvStr) {
   if (csvStr) return csvStr.split(',');
@@ -56,6 +55,8 @@ function isWhiteListedIP(podIP) {
   return isWhiteListed;
 }
 
+// eslint-disable-next-line unicorn/no-unsafe-regex -- the RegExp usage is guarded by a length check
+const validNamespaceRegex = /^[\da-z]([\da-z-]*[\da-z])?$/;
 function isValidNamespaceName(projectName) {
   return projectName.length <= 63 && validNamespaceRegex.test(projectName);
 }
