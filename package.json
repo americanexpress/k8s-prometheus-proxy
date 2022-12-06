@@ -16,7 +16,7 @@
     "url": "tbd"
   },
   "dependencies": {
-    "express": "4.10.6",
+    "express": "4.17.3",
     "http-proxy": "^1.17.0",
     "path": "*",
     "gulp": "^4.0.2",
